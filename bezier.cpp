@@ -1,7 +1,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cmath>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -24,25 +27,84 @@
 
 #define PI 3.14159265  // Should be used from mathlib
 inline float sqr(float x) { return x*x; }
-
+using namespace Eigen;
 using namespace std;
 
 //****************************************************
 // Some Classes
 //****************************************************
 
+class Point;
 class Viewport;
+class BezPatch;
 
+//***************** POINT *****************//
+class Point {
+  public:
+    Vector4f point;
+    Point();
+    Point(float, float, float);
+    Point(Vector4f);
+    Point add(Vector);
+    Point sub(Vector);
+    Vector sub(Point); //Uses current point as the arrow side of vector
+    Point transform(Transformation); //Returns the transformed point
+};
+
+//***************** VIEWPORT *****************//
 class Viewport {
   public:
     int w, h; // width and height
 };
 
+//***************** BEZPATCH *****************//
+class BezPatch {
+  public:
+    Point[4][4] controlPoints;
+
+}
+
+//***************** POINT METHODS *****************//
+Point::Point() {
+  Vector4f temp(0, 0, 0, 1);
+  point = temp;
+}
+
+Point::Point(float a, float b, float c) {
+  Vector4f temp(a, b, c, 1);
+  point = temp;
+}
+
+Point::Point(Vector4f vec) {
+  point = Vector4f(vec(0), vec(1), vec(2), 1);
+}
+
+Point Point::add(Vector v) {
+  Vector4f temp = point + v.vector;
+  return Point(temp);
+}
+
+Point Point::sub(Vector v) {
+  Vector4f temp = point - v.vector;
+  return Point(temp);
+}
+
+Vector Point::sub(Point p) {
+  Vector4f temp = point - p.point;
+  return Vector(temp);
+}
+
+Point Point::transform(Transformation trans) {
+  Point temp;
+  temp = Point(trans.matrix * point);
+  return temp;
+}
 //****************************************************
 // Global Variables
 //****************************************************
 Viewport	viewport;
 float parameter;
+int patches;
 bool adaptive = false;
 
 //****************************************************
@@ -76,35 +138,26 @@ void myReshape(int w, int h) {
 //****************************************************
 
 void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
-  if (isToon) {
-    glColor3f(toonify(r), toonify(g), toonify(b));
-  } else {
-    glColor3f(r, g, b);
-  } 
+  glColor3f(r, g, b);
   glVertex2f(x + 0.5, y + 0.5);   // The 0.5 is to target pixel
-  // centers 
-  // Note: Need to check for gap
-  // bug on inst machines.
 }
 
 //****************************************************
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
-
   glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
 
   glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
   glLoadIdentity();				        // make sure transformation is "zero'd"
 
-
   // Start drawing
-  if(isTor) {
+  /*if(isTor) {
 	  torus(viewport.w / 2.0 , viewport.h / 2.0 , innerRad, outerRad);
   }
   else {
 		circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-  }
+  }*/
   glFlush();
   glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
@@ -120,8 +173,12 @@ void loadScene(std::string file) {
     std::cout << "Unable to open file" << std::endl;
   } else {
     std::string line;
+    getline(inpfile,line);
+    printf("num patches: %d", atoi(line));
+    patches = atoi(line);
 
-    while(inpfile.good()) {
+    int i = 0;
+    while(i < numpatches) {
       vector<string> splitline;
       string buf;
 
@@ -133,11 +190,6 @@ void loadScene(std::string file) {
       }
       //Ignore blank lines
       if(splitline.size() == 0) {
-        continue;
-      }
-
-      //Ignore comments
-      if(splitline[0][0] == '#') {
         continue;
       }
 
@@ -211,8 +263,6 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
-
 
 
 
