@@ -1,8 +1,10 @@
 #include <vector>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <locale>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -45,24 +47,26 @@ class Point {
     Point();
     Point(float, float, float);
     Point(Vector4f);
-    Point add(Vector);
-    Point sub(Vector);
-    Vector sub(Point); //Uses current point as the arrow side of vector
-    Point transform(Transformation); //Returns the transformed point
+    //Point add(Vector);
+    //Point sub(Vector);
+    //Vector sub(Point); //Uses current point as the arrow side of vector
+    //Point transform(Transformation); //Returns the transformed point
 };
 
 //***************** VIEWPORT *****************//
 class Viewport {
   public:
     int w, h; // width and height
+    Viewport();
 };
 
 //***************** BEZPATCH *****************//
 class BezPatch {
   public:
-    Point[4][4] controlPoints;
+    Point controlPoints[4][4];
+    BezPatch(Point a[4][4]);
 
-}
+};
 
 //***************** POINT METHODS *****************//
 Point::Point() {
@@ -79,33 +83,44 @@ Point::Point(Vector4f vec) {
   point = Vector4f(vec(0), vec(1), vec(2), 1);
 }
 
-Point Point::add(Vector v) {
+/*Point Point::add(Vector v) {
   Vector4f temp = point + v.vector;
   return Point(temp);
-}
+  }
 
-Point Point::sub(Vector v) {
+  Point Point::sub(Vector v) {
   Vector4f temp = point - v.vector;
   return Point(temp);
-}
+  }
 
-Vector Point::sub(Point p) {
+  Vector Point::sub(Point p) {
   Vector4f temp = point - p.point;
   return Vector(temp);
-}
+  }
 
-Point Point::transform(Transformation trans) {
+  Point Point::transform(Transformation trans) {
   Point temp;
   temp = Point(trans.matrix * point);
   return temp;
+  }*/
+
+//***************** BEZPATCH METHODS *****************//
+BezPatch::BezPatch(Point cps[4][4]) {
+  controlPoints = cps;
+}
+
+//***************** BEZPATCH METHODS *****************//
+Viewport::Viewport() {
+    w, h = 400;
 }
 //****************************************************
 // Global Variables
 //****************************************************
-Viewport	viewport;
+Viewport viewport = Viewport();
 float parameter;
 int patches;
 bool adaptive = false;
+string filename;
 
 //****************************************************
 // Simple init function
@@ -153,11 +168,11 @@ void myDisplay() {
 
   // Start drawing
   /*if(isTor) {
-	  torus(viewport.w / 2.0 , viewport.h / 2.0 , innerRad, outerRad);
-  }
-  else {
-		circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-  }*/
+    torus(viewport.w / 2.0 , viewport.h / 2.0 , innerRad, outerRad);
+    }
+    else {
+    circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
+    }*/
   glFlush();
   glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
@@ -174,11 +189,11 @@ void loadScene(std::string file) {
   } else {
     std::string line;
     getline(inpfile,line);
-    printf("num patches: %d", atoi(line));
-    patches = atoi(line);
+    printf("num patches: %d", atoi(line.c_str()));
+    patches = atoi(line.c_str());
 
     int i = 0;
-    while(i < numpatches) {
+    while(i < patches) {
       vector<string> splitline;
       string buf;
 
@@ -195,15 +210,9 @@ void loadScene(std::string file) {
 
       //size width height
       else if(!splitline[0].compare("size")) {
-        width = atoi(splitline[1].c_str());
-        height = atoi(splitline[2].c_str());
-        bitmap = FreeImage_Allocate(width, height, 24);
-        printf("Outputting image of size: %d x %d\n", width, height);
-      }
-      //maxdepth depth
-      else if(!splitline[0].compare("maxdepth")) {
-        maxdepth = atoi(splitline[1].c_str());
-        printf("Raytracing with maxdepth = %d\n", maxdepth);
+        //width = atoi(splitline[1].c_str());
+        //height = atoi(splitline[2].c_str());
+        //printf("Outputting image of size: %d x %d\n", width, height);
       }
       //output filename
       else if(!splitline[0].compare("output")) {
@@ -226,16 +235,16 @@ int main(int argc, char *argv[]) {
     cout << "Not enough arguments" << endl;
     exit(EXIT_FAILURE);
   } else {
-    parameter = argv[2];
+    parameter = atoi(argv[2]);
   }
 
   if (argc == 3 ) {
-      if (strcmp(argv[3], "-a") == 0) {
-        adaptive = true;
-      } else {
-        cout << "Command line argument not found" << endl;
-        exit(EXIT_FAILURE);
-      }
+    if (strcmp(argv[3], "-a") == 0) {
+      adaptive = true;
+    } else {
+      cout << "Command line argument not found" << endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   //This initializes glut
