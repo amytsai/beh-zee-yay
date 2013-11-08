@@ -78,7 +78,7 @@ public:
 	float dot(Vector&);
 	Vector cross(Vector&);
 	void normalize();
-	bool equals(Vector&);
+	//bool equals(Vector&);
 	//Vector transform(Transformation); //Returns the transformed vector
 };
 
@@ -219,13 +219,13 @@ void Vector::normalize() {
 	len = 1.0f;
 }
 
-bool Vector::equals(Vector& v) {
+/*bool Vector::equals(Vector& v) {
 	Vector4f temp = v.vector - vector;
 	float size = temp.norm();
 	return size == 0;
 }
 
-/*Vector Vector::transform(Transformation trans){
+Vector Vector::transform(Transformation trans){
 Vector temp;
 temp = Vector(trans.matrix * vector);
 return temp;
