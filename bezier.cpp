@@ -243,7 +243,7 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 }
 
 Point LineSeg::interpolate(float u) {
-	Vector4f newPoint = start.point * u + end.point * (1 - u);
+	Vector4f newPoint = start.point * (1 - u) + end.point * (u);
 	return Point(newPoint);
 }
 
