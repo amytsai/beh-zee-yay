@@ -73,7 +73,7 @@ class Viewport {
 //***************** BEZPATCH *****************//
 class BezPatch {
   public:
-    vector<Point> controlPoints;
+    vector<Point> controlPoints; //Yes we're gonna man mode with a 1D vector
     BezPatch(vector<Point>);
 
 };
