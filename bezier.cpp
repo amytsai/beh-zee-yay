@@ -37,6 +37,7 @@ using namespace std;
 //****************************************************
 
 class Point;
+class LineSeg;
 class Viewport;
 class BezPatch;
 
@@ -46,11 +47,20 @@ class Point {
     Vector4f point;
     Point();
     Point(float, float, float);
-    Point(Vector4f);
+    Point(Vector4f&);
+	Point(Vector3f&);
     //Point add(Vector);
     //Point sub(Vector);
     //Vector sub(Point); //Uses current point as the arrow side of vector
     //Point transform(Transformation); //Returns the transformed point
+};
+
+//***************** LINESEG *****************//
+class LineSeg {
+	public:
+		Point start, end;
+		LineSeg(Point&, Point&);
+		Point betweenPoint(float);
 };
 
 //***************** VIEWPORT *****************//
@@ -63,8 +73,8 @@ class Viewport {
 //***************** BEZPATCH *****************//
 class BezPatch {
   public:
-    Point controlPoints[4][4];
-    BezPatch(Point a[4][4]);
+    vector<Point> controlPoints;
+    BezPatch(vector<Point>);
 
 };
 
@@ -79,7 +89,11 @@ Point::Point(float a, float b, float c) {
   point = temp;
 }
 
-Point::Point(Vector4f vec) {
+Point::Point(Vector4f& vec) {
+  point = Vector4f(vec(0), vec(1), vec(2), 1);
+}
+
+Point::Point(Vector3f& vec) {
   point = Vector4f(vec(0), vec(1), vec(2), 1);
 }
 
@@ -104,12 +118,24 @@ Point::Point(Vector4f vec) {
   return temp;
   }*/
 
+//***************** LINESEG METHODS *****************//
+LineSeg::LineSeg(Point& begin, Point& finish) {
+	start = begin;
+	end = finish;
+}
+
+Point LineSeg::betweenPoint(float u) {
+	Vector4f newPoint = start.point * u + end.point * (1 - u);
+	return Point(newPoint);
+}
+
+
 //***************** BEZPATCH METHODS *****************//
-BezPatch::BezPatch(Point cps[4][4]) {
+BezPatch::BezPatch(vector<Point> cps) {
   controlPoints = cps;
 }
 
-//***************** BEZPATCH METHODS *****************//
+//***************** VIEWPORT METHODS *****************//
 Viewport::Viewport() {
     w, h = 400;
 }
@@ -230,6 +256,7 @@ void loadScene(std::string file) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
+	cout << "asdf" << endl;
   loadScene(argv[1]);
   if (argc < 3) {
     cout << "Not enough arguments" << endl;
@@ -269,7 +296,6 @@ int main(int argc, char *argv[]) {
 
   glutMainLoop();							// infinite loop that will keep drawing and resizing
   // and whatever else
-
   return 0;
 }
 
