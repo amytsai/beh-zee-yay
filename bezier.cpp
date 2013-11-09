@@ -500,7 +500,7 @@ void loadScene(std::string file) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-
+	/*
 	loadScene(argv[1]);
 	if (argc < 3) {
 		cout << "Not enough arguments" << endl;
@@ -539,17 +539,30 @@ int main(int argc, char *argv[]) {
 	glutReshapeFunc(myReshape);        // function to run when the window gets resized
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
-	// and whatever else
-	/*point_vector asdf(4);
+	// and whatever else*/
+	point_vector asdf(16);
 	asdf[0] = Point(0, 0, 0);
-	asdf[1] = Point(0, 1, 0);
-	asdf[2] = Point(1, 1, 0);
-	asdf[3] = Point(1, 0, 0);
-	BezCurve temp = BezCurve(asdf);
+	asdf[1] = Point(0, .33, 0);
+	asdf[2] = Point(0, .66, 0);
+	asdf[3] = Point(0, 1.00, 0);
+	asdf[4] = Point(.33, 0, 0);
+	asdf[5] = Point(.33, .33, 0);
+	asdf[6] = Point(.33, .66, 0);
+	asdf[7] = Point(.33, 1.00, 0);
+	asdf[8] = Point(.66, 0, 0);
+	asdf[9] = Point(.66, .33, 0);
+	asdf[10] = Point(.66, .66, 0);
+	asdf[11] = Point(.66, 1.00, 0);
+	asdf[12] = Point(1.00, 0, 0);
+	asdf[13] = Point(1.00, .33, 0);
+	asdf[14] = Point(1.00, .66, 0);
+	asdf[15] = Point(1.00, 1.00, 0);
 
-	Vector interpPoint = temp.derivative(.5);
+	BezPatch temp = BezPatch(asdf);
+	Vector norm = Vector();
+	Point interpPoint = temp.interpolate(.5, .5, &norm);
 
-	printf("Interpolated point: %f, %f, %f\n", interpPoint.vector(0), interpPoint.vector(1), interpPoint.vector(2));*/
+	printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
 	return 0;
 }
 
