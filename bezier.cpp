@@ -45,7 +45,12 @@ class Viewport;
 class BezPatch;
 class BezCurve;
 class Vector;
+<<<<<<< HEAD
 typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector;
+=======
+class Vertex;
+typedef std::vector<Point, Eigen::aligned_allocator<Point>> point_vector;
+>>>>>>> origin/Jason
 
 //***************** POINT *****************//
 class Point {
@@ -80,6 +85,13 @@ public:
 	void normalize();
 	//bool equals(Vector&);
 	//Vector transform(Transformation); //Returns the transformed vector
+};
+
+class Vertex {
+public:
+	Vector3f vert;
+	Vertex();
+	Vertex(Point&);
 };
 
 //***************** LINESEG *****************//
@@ -231,6 +243,14 @@ temp = Vector(trans.matrix * vector);
 return temp;
 }*/
 
+//***************** VECTOR METHODS *****************//
+Vertex::Vertex() {
+	vert = Vector3f(0, 0, 0);
+}
+Vertex::Vertex(Point& p) {
+	vert = Vector3f(p.point(0), p.point(1), p.point(2));
+}
+
 //***************** LINESEG METHODS *****************//
 LineSeg::LineSeg() {
 	start = Point();
@@ -266,7 +286,7 @@ Point BezPatch::interpolate(float u, float v, Vector* norm) {
 	dPdv = BezCurve(vcurve).derivative(v);
 	dPdu = BezCurve(ucurve).derivative(u);
 	//DIRECTIONS WHATS GOING ON
-	*norm = dPdu.cross(dPdv);
+	norm = dPdu.cross(dPdv);
 	(*norm).normalize();
 	return BezCurve(vcurve).interpolate(v);
 }
@@ -321,7 +341,7 @@ Vector BezCurve::derivative(float u) {
 }
 
 //***************** SUBDIVIDEPATCH *****************//
-void subdividePatch(BezPatch patch, float step) {
+void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 	float numdiv = (1 + EPSILON) / step;
 	//Come confusion with the for loops here
 	for(int iu = 0; iu < numdiv; iu++) {
@@ -330,6 +350,7 @@ void subdividePatch(BezPatch patch, float step) {
 			float v = iv * step;
 			Vector normal = Vector();
 			Point interpPoint = patch.interpolate(u, v, &normal);
+			(*VertexArray).push_back(interpPoint);
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
 	}
@@ -510,9 +531,9 @@ int main(int argc, char *argv[]) {
 	asdf[3] = Point(1, 0, 0);
 	BezCurve temp = BezCurve(asdf);
 
-	Point interpPoint = temp.interpolate(.75);
+	Vector interpPoint = temp.derivative(.5);
 
-	printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));*/
+	printf("Interpolated point: %f, %f, %f\n", interpPoint.vector(0), interpPoint.vector(1), interpPoint.vector(2));*/
 	return 0;
 }
 
