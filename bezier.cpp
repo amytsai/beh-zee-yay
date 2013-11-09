@@ -381,11 +381,12 @@ vector<BezPatch> patchList;
 //Currently draws a single bezier patch given a step
 void drawBezPatch(BezPatch patch, float step) {
 	float numdiv = (1 + EPSILON) / step;
-	point_vector vertexArray(25);
+	//vertexArray size needs to be related to numdiv
+	point_vector vertexArray(((int) numdiv) * ((int) numdiv));
 	subdividePatch(patch, step, &vertexArray);
 	//Probably endpoint errors here
-	for(int x = 0; x < numdiv; x++) {
-		for(int y = 0; y < numdiv; y++) {
+	for(int x = 0; x < ((int) numdiv); x++) {
+		for(int y = 0; y < ((int) numdiv); y++) {
 			int z = (numdiv + 1) * x + y;
 			glBegin(GL_QUADS); 
 			glVertex3f(vertexArray[z].point(0), vertexArray[z].point(1), vertexArray[z].point(2));
@@ -546,6 +547,9 @@ int main(int argc, char *argv[]) {
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
 	// and whatever else*/
+	//This should be related to step size
+	int size = 16;
+
 	point_vector asdf(16);
 	asdf[0] = Point(0, 0, 0);
 	asdf[1] = Point(0, .333, 0);
@@ -566,9 +570,10 @@ int main(int argc, char *argv[]) {
 	
 	BezPatch temp = BezPatch(asdf);
 	Vector norm = Vector();
-	point_vector vertexList = point_vector(9);
-	Point interpPoint = temp.interpolate(.5, .5, &norm);
-	subdividePatch(temp, .5, &vertexList);
+	
+	point_vector vertexList = point_vector(size);
+	Point interpPoint = temp.interpolate(.33, .33, &norm);
+	subdividePatch(temp, .33, &vertexList);
 
 	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
