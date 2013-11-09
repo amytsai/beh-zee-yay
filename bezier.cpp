@@ -274,7 +274,8 @@ BezPatch::BezPatch(point_vector cps) {
 
 Point BezPatch::interpolate(float u, float v, Vector* norm) {
 	//Direction confusion here
-	point_vector vcurve, ucurve;
+	point_vector vcurve = point_vector(4);
+	point_vector ucurve = point_vector(4);
 	Vector dPdv, dPdu;
 	for(int x = 0; x < 4; x++) {
 		vcurve[x] = BezCurve(controlPointsPatch[x], controlPointsPatch[4 + x], controlPointsPatch[8 + x], controlPointsPatch[12 + x]).interpolate(u);
@@ -557,9 +558,10 @@ int main(int argc, char *argv[]) {
 	asdf[13] = Point(1.00, .33, 0);
 	asdf[14] = Point(1.00, .66, 0);
 	asdf[15] = Point(1.00, 1.00, 0);
-
+	
 	BezPatch temp = BezPatch(asdf);
 	Vector norm = Vector();
+	
 	Point interpPoint = temp.interpolate(.5, .5, &norm);
 
 	printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
