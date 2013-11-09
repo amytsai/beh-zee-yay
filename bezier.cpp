@@ -45,12 +45,9 @@ class Viewport;
 class BezPatch;
 class BezCurve;
 class Vector;
-<<<<<<< HEAD
-typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector;
-=======
 class Vertex;
+
 typedef std::vector<Point, Eigen::aligned_allocator<Point>> point_vector;
->>>>>>> origin/Jason
 
 //***************** POINT *****************//
 class Point {
