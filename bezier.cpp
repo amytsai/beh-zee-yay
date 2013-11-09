@@ -47,9 +47,10 @@ class BezCurve;
 class Vector;
 class Vertex;
 
-typedef std::vector<Point, Eigen::aligned_allocator<Point>> point_vector;
+typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANCE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
 
 //***************** POINT *****************//
+/* Class for storing 3D points using homogenous coordinates */
 class Point {
 public:
 	Vector4f point;
@@ -65,6 +66,8 @@ public:
 };
 
 //***************** VECTOR *****************//
+/* Class for storing 3D vectors using homogenous coordinates. Vectors are assumed
+ * to start from the origin*/
 class Vector {
 public:
 	Vector4f vector;
@@ -92,6 +95,7 @@ public:
 };
 
 //***************** LINESEG *****************//
+/* Class to store a line segment. Represented by a beginning and end Poing */
 class LineSeg {
 public:
 	Point start, end;
@@ -102,6 +106,7 @@ public:
 };
 
 //***************** VIEWPORT *****************//
+/* Class to represent the viewing window */
 class Viewport {
 public:
 	int w, h; // width and height
@@ -109,14 +114,16 @@ public:
 };
 
 //***************** BEZPATCH *****************//
+/* Class to represent a cubic Bezier Patch with 16 control points */
 class BezPatch {
 public:
-	point_vector controlPointsPatch; //Yes we're gonna man mode with a 1D vector
+	point_vector controlPointsPatch;
 	BezPatch(point_vector);
 	Point interpolate(float, float, Vector*);
 };
 
 //***************** BEZCURVE *****************//
+/* Class to represent a cubic Bezier Curve with 4 control points */
 class BezCurve {
 public:
 	point_vector controlPointsCurve;  //POINTS MUST BE IN ABCD ORDER
@@ -240,7 +247,7 @@ temp = Vector(trans.matrix * vector);
 return temp;
 }*/
 
-//***************** VECTOR METHODS *****************//
+//***************** VERTEX METHODS *****************//
 Vertex::Vertex() {
 	vert = Vector3f(0, 0, 0);
 }
@@ -260,6 +267,7 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 }
 
 void LineSeg::interpolate(float u, Point* interp) {
+	/* Parametric interpolation of a line segment, assuming start is u = 0 end is u = 1*/
 	Vector4f newPoint = start.point * (1 - u) + end.point * (u);
 	(*interp) = Point(newPoint);
 }
@@ -454,43 +462,57 @@ void myDisplay() {
 void loadScene(std::string file) {
 	cout << "loading Scene .. "<< endl;
 	ifstream inpfile(file.c_str());
+    printf("blah\n");
 	if(!inpfile.is_open()) {
-		std::cout << "Unable to open file" << std::endl;
+		cout << "Unable to open file" << endl;
 	} else {
-		std::string line;
+		string line;
+        printf("before getline\n");
 		getline(inpfile,line);
-		printf("num patches: %d", atoi(line.c_str()));
+		printf("num patches: %d\n", atoi(line.c_str()));
 		patches = atoi(line.c_str());
-
 		int i = 0;
 		while(i < patches) {
+            printf("i = %d\n", i);
 			point_vector points;
 			for(int j = 0; j < 4; j++) {
 				vector<string> splitline;
 				string buf;
 				getline(inpfile,line);
+				printf("line %s\n", line.c_str());
 				stringstream ss(line);
 				while (ss >> buf) {
 					splitline.push_back(buf);
 				}
-				float a1 = atof(splitline[0].c_str());
-				float a2 = atof(splitline[1].c_str());
-				float a3 = atof(splitline[2].c_str());
-				float b1 = atof(splitline[3].c_str());
-				float b2 = atof(splitline[4].c_str());
-				float b3 = atof(splitline[5].c_str());
-				float c1 = atof(splitline[6].c_str());
-				float c2 = atof(splitline[7].c_str());
-				float c3 = atof(splitline[8].c_str());
-				float d1 = atof(splitline[9].c_str());
-				float d2 = atof(splitline[10].c_str());
-				float d3 = atof(splitline[11].c_str());
-				points.push_back(Point(a1, a2, a3));
-				points.push_back(Point(b1, b2, b3));
-				points.push_back(Point(c1, c2, c3));
-				points.push_back(Point(d1, d2, d3));
+
+				//Ignore blank lines
+				if(splitline.size() == 0) {
+					continue;
+				} else {
+					printf("buf: %s\n", buf.c_str());
+					float a1 = atof(splitline[0].c_str());
+					float a2 = atof(splitline[1].c_str());
+					float a3 = atof(splitline[2].c_str());
+					float b1 = atof(splitline[3].c_str());
+					float b2 = atof(splitline[4].c_str());
+					float b3 = atof(splitline[5].c_str());
+					float c1 = atof(splitline[6].c_str());
+					float c2 = atof(splitline[7].c_str());
+					float c3 = atof(splitline[8].c_str());
+					float d1 = atof(splitline[9].c_str());
+					float d2 = atof(splitline[10].c_str());
+					float d3 = atof(splitline[11].c_str());
+					points.push_back(Point(a1, a2, a3));
+					points.push_back(Point(b1, b2, b3));
+					points.push_back(Point(c1, c2, c3));
+					points.push_back(Point(d1, d2, d3));
+                	printf("%f, %f, %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f\n", a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3);
+                }
 			}
+			//getline(inpfile,line); //to skip blank line
 			patchList.push_back(BezPatch(points));
+			printf("added new patch\n");
+			i++;
 
 		}
 	}
@@ -501,16 +523,18 @@ void loadScene(std::string file) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-	/*
 	loadScene(argv[1]);
+	printf("after loadScene()\n");
 	if (argc < 3) {
 		cout << "Not enough arguments" << endl;
 		exit(EXIT_FAILURE);
 	} else {
-		parameter = atoi(argv[2]);
+		printf("argv[2]: %s\n", argv[2]);
+		parameter = atof(argv[2]);
+		printf("subdivision parameter: %f\n", parameter);
 	}
-
-	if (argc == 3 ) {
+	printf("argc = %d\n", argc);
+	if (argc > 3 ) {
 		if (strcmp(argv[3], "-a") == 0) {
 			adaptive = true;
 		} else {
@@ -518,7 +542,7 @@ int main(int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		}
 	}
-
+	printf("after reading in parameters\n");
 	//This initializes glut
 	glutInit(&argc, argv);
 
@@ -541,7 +565,7 @@ int main(int argc, char *argv[]) {
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
 	// and whatever else*/
-	point_vector asdf(16);
+	/*point_vector asdf(16);
 	asdf[0] = Point(0, 0, 0);
 	asdf[1] = Point(0, .33, 0);
 	asdf[2] = Point(0, .66, 0);
@@ -565,7 +589,7 @@ int main(int argc, char *argv[]) {
 	Point interpPoint = temp.interpolate(.5, .5, &norm);
 
 	printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-	return 0;
+	return 0;*/
 }
 
 
