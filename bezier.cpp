@@ -455,7 +455,12 @@ void myDisplay() {
 	glLoadIdentity();				        // make sure transformation is "zero'd"
 
 
-
+	glColor3f(1, 0, 0);
+	glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
+    glVertex3f( 0.0f, 1.0f, 0.0f);              // Top
+    glVertex3f(-1.0f,-1.0f, 0.0f);              // Bottom Left
+    glVertex3f( 1.0f,-1.0f, 0.0f);              // Bottom Right
+	glEnd();                            // Finished Drawing The Triangle
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -596,7 +601,7 @@ int main(int argc, char *argv[]) {
 	int size = 16;
 	point_vector vertexList = point_vector(size);
 	Point interpPoint = temp.interpolate(.33, .33, &norm);
-	drawBezPatch(temp, .33);
+	//drawBezPatch(temp, .33);
 	//subdividePatch(temp, .33, &vertexList);
 
 	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
