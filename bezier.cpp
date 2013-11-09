@@ -220,9 +220,9 @@ void Vector::normalize() {
 }
 
 /*bool Vector::equals(Vector& v) {
-	Vector4f temp = v.vector - vector;
-	float size = temp.norm();
-	return size == 0;
+Vector4f temp = v.vector - vector;
+float size = temp.norm();
+return size == 0;
 }
 
 Vector Vector::transform(Transformation trans){
@@ -333,6 +333,11 @@ void subdividePatch(BezPatch patch, float step) {
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
 	}
+}
+
+//***************** DRAW *****************//
+void draw() {
+
 }
 
 //***************** VIEWPORT METHODS *****************//
@@ -461,19 +466,19 @@ int main(int argc, char *argv[]) {
 
 	loadScene(argv[1]);
 	if (argc < 3) {
-	cout << "Not enough arguments" << endl;
-	exit(EXIT_FAILURE);
+		cout << "Not enough arguments" << endl;
+		exit(EXIT_FAILURE);
 	} else {
-	parameter = atoi(argv[2]);
+		parameter = atoi(argv[2]);
 	}
 
 	if (argc == 3 ) {
-	if (strcmp(argv[3], "-a") == 0) {
-	adaptive = true;
-	} else {
-	cout << "Command line argument not found" << endl;
-	exit(EXIT_FAILURE);
-	}
+		if (strcmp(argv[3], "-a") == 0) {
+			adaptive = true;
+		} else {
+			cout << "Command line argument not found" << endl;
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	//This initializes glut
