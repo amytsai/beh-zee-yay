@@ -373,7 +373,7 @@ vector<BezPatch> patchList;
 // DRAW FUNCTION
 //****************************************************
 //Currently draws a single bezier patch given a step
-void draw(BezPatch patch, float step) {
+void drawBezPatch(BezPatch patch, float step) {
 	float numdiv = (1 + EPSILON) / step;
 	point_vector vertexArray(25);
 	subdividePatch(patch, step, &vertexArray);
