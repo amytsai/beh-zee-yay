@@ -283,7 +283,7 @@ Point BezPatch::interpolate(float u, float v, Vector* norm) {
 	dPdv = BezCurve(vcurve).derivative(v);
 	dPdu = BezCurve(ucurve).derivative(u);
 	//DIRECTIONS WHATS GOING ON
-	norm = dPdu.cross(dPdv);
+	(*norm) = dPdu.cross(dPdv);
 	(*norm).normalize();
 	return BezCurve(vcurve).interpolate(v);
 }
@@ -353,10 +353,7 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 	}
 }
 
-//***************** DRAW *****************//
-void draw() {
 
-}
 
 //***************** VIEWPORT METHODS *****************//
 Viewport::Viewport() {
@@ -371,6 +368,28 @@ int patches;
 bool adaptive = false;
 string filename;
 vector<BezPatch> patchList;
+
+//****************************************************
+// DRAW FUNCTION
+//****************************************************
+//Currently draws a single bezier patch given a step
+void draw(BezPatch patch, float step) {
+	float numdiv = (1 + EPSILON) / step;
+	point_vector vertexArray(25);
+	subdividePatch(patch, step, &vertexArray);
+	//Probably endpoint errors here
+	for(int x = 0; x < numdiv; x++) {
+		for(int y = 0; y < numdiv; y++) {
+			int z = (numdiv + 1) * x + y;
+			glBegin(GL_QUADS); 
+			glVertex3f(vertexArray[z].point(0), vertexArray[z].point(1), vertexArray[z].point(2));
+			glVertex3f(vertexArray[z + 1].point(0), vertexArray[z + 1].point(1), vertexArray[z + 1].point(2));
+			glVertex3f(vertexArray[z + numdiv + 1].point(0), vertexArray[z + numdiv + 1].point(1), vertexArray[z + numdiv + 1].point(2));
+			glVertex3f(vertexArray[z + numdiv + 2].point(0), vertexArray[z + numdiv + 2].point(1), vertexArray[z + numdiv + 2].point(2));
+			glEnd(); 
+		}
+	}
+}
 
 //****************************************************
 // Simple init function
