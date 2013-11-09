@@ -88,7 +88,7 @@ public:
 	Point start, end;
 	LineSeg();
 	LineSeg(Point&, Point&);
-	Point& interpolate(float);
+	void interpolate(float, Point*);
 
 };
 
@@ -242,9 +242,9 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 	end = finish;
 }
 
-Point& LineSeg::interpolate(float u) {
+void LineSeg::interpolate(float u, Point* interp) {
 	Vector4f newPoint = start.point * (1 - u) + end.point * (u);
-	return new Point(newPoint);
+	(*interp) = Point(newPoint);
 }
 
 
@@ -285,22 +285,37 @@ BezCurve::BezCurve(Point& a, Point& b, Point& c, Point& d) : controlPointsCurve(
 }
 
 Point BezCurve::interpolate(float u) {
-	LineSeg AB, BC, CD;
+	LineSeg AB, BC, CD, EF, FG, HI;
+	Point E, F, G, H, I, J;
 	AB = LineSeg(controlPointsCurve.at(0), controlPointsCurve.at(1));
 	BC = LineSeg(controlPointsCurve.at(1), controlPointsCurve.at(2));
 	CD = LineSeg(controlPointsCurve.at(2), controlPointsCurve.at(3));
-	//return Point();
-	return LineSeg(LineSeg(AB.interpolate(u), BC.interpolate(u)).interpolate(u), LineSeg(BC.interpolate(u), CD.interpolate(u)).interpolate(u)).interpolate(u);
+	AB.interpolate(u, &E);
+	BC.interpolate(u, &F);
+	CD.interpolate(u, &G);
+	EF = LineSeg(E, F);
+	FG = LineSeg(F, G);
+	EF.interpolate(u, &H);
+	FG.interpolate(u, &I);
+	HI = LineSeg(H, I);
+	HI.interpolate(u, &J);
+	return J;
 }
 
 Vector BezCurve::derivative(float u) {
-	LineSeg AB, BC, CD;
+	LineSeg AB, BC, CD, EF, FG, HI;
+	Point E, F, G, H, I, J;
 	AB = LineSeg(controlPointsCurve.at(0), controlPointsCurve.at(1));
 	BC = LineSeg(controlPointsCurve.at(1), controlPointsCurve.at(2));
 	CD = LineSeg(controlPointsCurve.at(2), controlPointsCurve.at(3));
-	Point D = LineSeg(AB.interpolate(u), BC.interpolate(u)).interpolate(u);
-	Point E = LineSeg(BC.interpolate(u), CD.interpolate(u)).interpolate(u);
-	Vector out = E.sub(D);
+	AB.interpolate(u, &E);
+	BC.interpolate(u, &F);
+	CD.interpolate(u, &G);
+	EF = LineSeg(E, F);
+	FG = LineSeg(F, G);
+	EF.interpolate(u, &H);
+	FG.interpolate(u, &I);
+	Vector out = H.sub(I);
 	out = out.mult(3);
 	return out;
 }
@@ -444,7 +459,7 @@ void loadScene(std::string file) {
 //****************************************************
 int main(int argc, char *argv[]) {
 
-	/*loadScene(argv[1]);
+	loadScene(argv[1]);
 	if (argc < 3) {
 	cout << "Not enough arguments" << endl;
 	exit(EXIT_FAILURE);
@@ -482,7 +497,7 @@ int main(int argc, char *argv[]) {
 	glutReshapeFunc(myReshape);        // function to run when the window gets resized
 
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
-	// and whatever else*/
+	// and whatever else
 	/*point_vector asdf(4);
 	asdf[0] = Point(0, 0, 0);
 	asdf[1] = Point(0, 1, 0);
