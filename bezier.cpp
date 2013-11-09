@@ -45,7 +45,7 @@ class Viewport;
 class BezPatch;
 class BezCurve;
 class Vector;
-typedef std::vector<Point, Eigen::aligned_allocator<Point>> point_vector;
+typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector;
 
 //***************** POINT *****************//
 class Point {
@@ -88,7 +88,7 @@ public:
 	Point start, end;
 	LineSeg();
 	LineSeg(Point&, Point&);
-	Point interpolate(float);
+	Point& interpolate(float);
 
 };
 
@@ -242,9 +242,9 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 	end = finish;
 }
 
-Point LineSeg::interpolate(float u) {
+Point& LineSeg::interpolate(float u) {
 	Vector4f newPoint = start.point * (1 - u) + end.point * (u);
-	return Point(newPoint);
+	return new Point(newPoint);
 }
 
 
@@ -332,6 +332,7 @@ float parameter;
 int patches;
 bool adaptive = false;
 string filename;
+vector<BezPatch> patchList;
 
 //****************************************************
 // Simple init function
@@ -405,33 +406,34 @@ void loadScene(std::string file) {
 
 		int i = 0;
 		while(i < patches) {
-			vector<string> splitline;
-			string buf;
+			point_vector points;
+			for(int j = 0; j < 4; j++) {
+				vector<string> splitline;
+				string buf;
+				getline(inpfile,line);
+				stringstream ss(line);
+				while (ss >> buf) {
+					splitline.push_back(buf);
+				}
+				float a1 = atof(splitline[0].c_str());
+				float a2 = atof(splitline[1].c_str());
+				float a3 = atof(splitline[2].c_str());
+				float b1 = atof(splitline[3].c_str());
+				float b2 = atof(splitline[4].c_str());
+				float b3 = atof(splitline[5].c_str());
+				float c1 = atof(splitline[6].c_str());
+				float c2 = atof(splitline[7].c_str());
+				float c3 = atof(splitline[8].c_str());
+				float d1 = atof(splitline[9].c_str());
+				float d2 = atof(splitline[10].c_str());
+				float d3 = atof(splitline[11].c_str());
+				points.push_back(Point(a1, a2, a3));
+				points.push_back(Point(b1, b2, b3));
+				points.push_back(Point(c1, c2, c3));
+				points.push_back(Point(d1, d2, d3));
+			}
+			patchList.push_back(BezPatch(points));
 
-			getline(inpfile,line);
-			stringstream ss(line);
-
-			while (ss >> buf) {
-				splitline.push_back(buf);
-			}
-			//Ignore blank lines
-			if(splitline.size() == 0) {
-				continue;
-			}
-
-			//size width height
-			else if(!splitline[0].compare("size")) {
-				//width = atoi(splitline[1].c_str());
-				//height = atoi(splitline[2].c_str());
-				//printf("Outputting image of size: %d x %d\n", width, height);
-			}
-			//output filename
-			else if(!splitline[0].compare("output")) {
-				filename = splitline[1];
-				printf("Writing to file: %s\n", filename.c_str());
-			} else {
-				std::cerr << "Unknown command: " << splitline[0] << std::endl;
-			}
 		}
 	}
 
