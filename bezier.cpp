@@ -390,12 +390,16 @@ vector<BezPatch> patchList;
 void drawBezPatch(BezPatch patch, float step) {
 	float numdiv = (1 + EPSILON) / step;
 	//vertexArray size needs to be related to numdiv
-	point_vector vertexArray(((int) numdiv) * ((int) numdiv));
+	int vertexArraySize = ( numdiv + 1) * ( numdiv + 1);
+	point_vector vertexArray(vertexArraySize);
 	subdividePatch(patch, step, &vertexArray);
 	//Probably endpoint errors here
 	for(int x = 0; x < ((int) numdiv); x++) {
 		for(int y = 0; y < ((int) numdiv); y++) {
+			
 			int z = (numdiv + 1) * x + y;
+			cout << z << endl;
+			
 			glBegin(GL_QUADS); 
 			glVertex3f(vertexArray[z].point(0), vertexArray[z].point(1), vertexArray[z].point(2));
 			glVertex3f(vertexArray[z + 1].point(0), vertexArray[z + 1].point(1), vertexArray[z + 1].point(2));
@@ -450,13 +454,9 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
 	glLoadIdentity();				        // make sure transformation is "zero'd"
 
-	// Start drawing
-	/*if(isTor) {
-	torus(viewport.w / 2.0 , viewport.h / 2.0 , innerRad, outerRad);
-	}
-	else {
-	circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-	}*/
+
+
+
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
@@ -529,7 +529,7 @@ void loadScene(std::string file) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-	loadScene(argv[1]);
+	/*loadScene(argv[1]);
 	printf("after loadScene()\n");
 	if (argc < 3) {
 		cout << "Not enough arguments" << endl;
@@ -547,7 +547,7 @@ int main(int argc, char *argv[]) {
 			cout << "Command line argument not found" << endl;
 			exit(EXIT_FAILURE);
 		}
-	}
+	}*/
 	printf("after reading in parameters\n");
 	//This initializes glut
 	glutInit(&argc, argv);
@@ -568,11 +568,11 @@ int main(int argc, char *argv[]) {
 
 	glutDisplayFunc(myDisplay);        // function to run when its time to draw something
 	glutReshapeFunc(myReshape);        // function to run when the window gets resized
+	
+	
 
-	glutMainLoop();							// infinite loop that will keep drawing and resizing
-	// and whatever else*/
 
-	/*point_vector asdf(16);
+	point_vector asdf(16);
 
 	asdf[0] = Point(0, 0, 0);
 	asdf[1] = Point(0, .333, 0);
@@ -593,13 +593,14 @@ int main(int argc, char *argv[]) {
 	
 	BezPatch temp = BezPatch(asdf);
 	Vector norm = Vector();
-	
+	int size = 16;
 	point_vector vertexList = point_vector(size);
 	Point interpPoint = temp.interpolate(.33, .33, &norm);
-	subdividePatch(temp, .33, &vertexList);
+	drawBezPatch(temp, .33);
+	//subdividePatch(temp, .33, &vertexList);
 
 	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
+	/*printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[1].point(0), vertexList[1].point(1), vertexList[1].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[2].point(0), vertexList[2].point(1), vertexList[2].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[3].point(0), vertexList[3].point(1), vertexList[3].point(2));
@@ -607,8 +608,14 @@ int main(int argc, char *argv[]) {
 	printf("vertexList point: %f, %f, %f\n", vertexList[5].point(0), vertexList[5].point(1), vertexList[5].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[6].point(0), vertexList[6].point(1), vertexList[6].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[7].point(0), vertexList[7].point(1), vertexList[7].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[8].point(0), vertexList[8].point(1), vertexList[8].point(2));
-	return 0;*/
+	printf("vertexList point: %f, %f, %f\n", vertexList[8].point(0), vertexList[8].point(1), vertexList[8].point(2));*/
+
+
+	glutMainLoop();							// infinite loop that will keep drawing and resizing
+	// and whatever else*/
+
+	
+	return 0;
 }
 
 
