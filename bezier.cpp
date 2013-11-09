@@ -340,6 +340,7 @@ Vector BezCurve::derivative(float u) {
 
 //***************** SUBDIVIDEPATCH *****************//
 void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
+	int x = 0;
 	float numdiv = (1 + EPSILON) / step;
 	//Come confusion with the for loops here
 	for(int iu = 0; iu < numdiv; iu++) {
@@ -348,9 +349,10 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 			float v = iv * step;
 			Vector normal = Vector();
 			Point interpPoint = patch.interpolate(u, v, &normal);
-			printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-			(*VertexArray).push_back(interpPoint);
-			printf("vertexArray point: %f, %f, %f\n", (*VertexArray)[1].point(0), (*VertexArray)[1].point(1), (*VertexArray)[1].point(2));
+			//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
+			(*VertexArray)[x] = (interpPoint);
+			//printf("vertexArray point: %f, %f, %f\n", (*VertexArray)[1].point(0), (*VertexArray)[1].point(1), (*VertexArray)[1].point(2));
+			x++;
 			//cout << "asdf" << endl;
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
@@ -569,7 +571,7 @@ int main(int argc, char *argv[]) {
 	subdividePatch(temp, .5, &vertexList);
 
 	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-	/*printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
+	printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[1].point(0), vertexList[1].point(1), vertexList[1].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[2].point(0), vertexList[2].point(1), vertexList[2].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[3].point(0), vertexList[3].point(1), vertexList[3].point(2));
@@ -577,7 +579,7 @@ int main(int argc, char *argv[]) {
 	printf("vertexList point: %f, %f, %f\n", vertexList[5].point(0), vertexList[5].point(1), vertexList[5].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[6].point(0), vertexList[6].point(1), vertexList[6].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[7].point(0), vertexList[7].point(1), vertexList[7].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[8].point(0), vertexList[8].point(1), vertexList[8].point(2));*/
+	printf("vertexList point: %f, %f, %f\n", vertexList[8].point(0), vertexList[8].point(1), vertexList[8].point(2));
 	return 0;
 }
 
