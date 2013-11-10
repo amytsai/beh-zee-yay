@@ -349,19 +349,29 @@ Vector BezCurve::derivative(float u) {
 //***************** SUBDIVIDEPATCH *****************//
 void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 	int x = 0;
-	float numdiv = (1 + EPSILON) / step;
+	float numdiv = 1 / step;
+	printf("numdiv = %f, step = %f \n", numdiv, step);
 	//Come confusion with the for loops here
 	for(int iu = 0; iu < numdiv; iu++) {
 		float u = iu * step;
 		for(int iv = 0; iv < numdiv; iv++) {
 			float v = iv * step;
 			Vector normal = Vector();
-			Point interpPoint = patch.interpolate(u, v, &normal);
+			//Point interpPoint = patch.interpolate(u, v, &normal);
 			//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-			(*VertexArray)[x] = (interpPoint);
+			//(*VertexArray)[x] = (interpPoint);
 			//printf("vertexArray point: %f, %f, %f\n", (*VertexArray)[1].point(0), (*VertexArray)[1].point(1), (*VertexArray)[1].point(2));
-			x++;
-			//cout << "asdf" << endl;
+			//x++;
+            printf("u = %f, v = %f \n", u, v);
+            Point interpPoint0 = patch.interpolate(u, v, &normal);
+            VertexArray->push_back(interpPoint0);
+            Point interpPoint1 = patch.interpolate(u, v+step, &normal);
+            VertexArray->push_back(interpPoint1);
+            Point interpPoint2 = patch.interpolate(u+step, v+step, &normal);
+            VertexArray->push_back(interpPoint2);
+            Point interpPoint3 = patch.interpolate(u+step, v, &normal);
+            VertexArray->push_back(interpPoint3);
+            x++;
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
 	}
@@ -380,6 +390,8 @@ Viewport viewport = Viewport();
 float parameter;
 int patches;
 bool adaptive = false;
+bool isFlat = false;
+bool isWireframe = false;
 string filename;
 vector<BezPatch> patchList;
 
@@ -388,33 +400,46 @@ vector<BezPatch> patchList;
 //****************************************************
 //Currently draws a single bezier patch given a step
 void drawBezPatch(BezPatch patch, float step) {
-	float numdiv = (1 + EPSILON) / step;
+	float numdiv = 1 / step;
 	//vertexArray size needs to be related to numdiv
-	int vertexArraySize = ( numdiv + 1) * ( numdiv + 1);
+	int vertexArraySize =  (int) numdiv * numdiv * 4;
+	printf("vertexArraySize = %d\n", vertexArraySize);
 	point_vector vertexArray(vertexArraySize);
 	subdividePatch(patch, step, &vertexArray);
 	//Probably endpoint errors here
-	for(int x = 0; x < ((int) numdiv); x++) {
-		for(int y = 0; y < ((int) numdiv); y++) {
-			
+	/*for(int x = 0; x < ((int) numdiv); x++) {
+		for(int y = 0; y < ((int) numdiv); y++) {			
 			int z = (numdiv + 1) * x + y;
 			cout << z << endl;
-			
 			glBegin(GL_QUADS); 
 			glVertex3f(vertexArray[z].point(0), vertexArray[z].point(1), vertexArray[z].point(2));
 			glVertex3f(vertexArray[z + 1].point(0), vertexArray[z + 1].point(1), vertexArray[z + 1].point(2));
-			glVertex3f(vertexArray[z + numdiv + 1].point(0), vertexArray[z + numdiv + 1].point(1), vertexArray[z + numdiv + 1].point(2));
 			glVertex3f(vertexArray[z + numdiv + 2].point(0), vertexArray[z + numdiv + 2].point(1), vertexArray[z + numdiv + 2].point(2));
+			glVertex3f(vertexArray[z + numdiv + 1].point(0), vertexArray[z + numdiv + 1].point(1), vertexArray[z + numdiv + 1].point(2));
 			glEnd(); 
 		}
-	}
+	}*/
+	glBegin(GL_QUADS);
+    for(int i = 0; i < vertexArray.size(); i +=4) {
+    	printf("drawing point (%f, %f, %f) \n", vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+        printf("drawing point (%f, %f, %f) \n", vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+        printf("drawing point (%f, %f, %f) \n", vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+        printf("drawing point (%f, %f, %f) \n", vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+    }
+    glEnd();
 }
 
 //****************************************************
 // Simple init function
 //****************************************************
 void initScene(){
-
+	glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	// Nothing to do here for this simple example.
 
 }
@@ -430,7 +455,7 @@ void myReshape(int w, int h) {
 	glViewport (0,0,viewport.w,viewport.h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0, viewport.w, 0, viewport.h);
+	//gluOrtho2D(0, viewport.w, 0, viewport.h);
 
 }
 
@@ -454,18 +479,43 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
 	glLoadIdentity();				        // make sure transformation is "zero'd"
 
-
-	glColor3f(1, 0, 0);
-	glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
-    glVertex3f( 0.0f, 1.0f, 0.0f);              // Top
-    glVertex3f(-1.0f,-1.0f, 0.0f);              // Bottom Left
-    glVertex3f( 1.0f,-1.0f, 0.0f);              // Bottom Right
+	//glColor3f(1, 0, 0);
+	for(int i = 0; i < patchList.size(); i++) {
+		drawBezPatch(patchList[i], parameter);
+	}
+	/*glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
+    glVertex3f( 0.0f, 100.0f, 0.0f);              // Top
+    glVertex3f(10.0f,10.0f, 0.0f);              // Bottom Left
+    glVertex3f( 90.0f,10.0f, 0.0f);*/              // Bottom Right
 	glEnd();                            // Finished Drawing The Triangle
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
 
+//****************************************************
+// Deal with Keyboard input
+//***************************************************
+void keyboard( unsigned char key, int x, int y )
+{
+	switch(key) {
+		case 's':
+			if(isFlat) {
+				glShadeModel(GL_SMOOTH);
+			} else {
+				glShadeModel(GL_FLAT);
+			}
+		case 'w':
+			if(isWireframe) {
+				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+			} else {
+				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			}
+
+
+	}
+	glutPostRedisplay();
+}
 //****************************************************
 // Parse Scene File
 //****************************************************
@@ -534,7 +584,7 @@ void loadScene(std::string file) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-	/*loadScene(argv[1]);
+	loadScene(argv[1]);
 	printf("after loadScene()\n");
 	if (argc < 3) {
 		cout << "Not enough arguments" << endl;
@@ -552,7 +602,7 @@ int main(int argc, char *argv[]) {
 			cout << "Command line argument not found" << endl;
 			exit(EXIT_FAILURE);
 		}
-	}*/
+	}
 	printf("after reading in parameters\n");
 	//This initializes glut
 	glutInit(&argc, argv);
@@ -573,11 +623,10 @@ int main(int argc, char *argv[]) {
 
 	glutDisplayFunc(myDisplay);        // function to run when its time to draw something
 	glutReshapeFunc(myReshape);        // function to run when the window gets resized
-	
+	glutKeyboardFunc(keyboard);
 	
 
-
-	point_vector asdf(16);
+	/*point_vector asdf(16);
 
 	asdf[0] = Point(0, 0, 0);
 	asdf[1] = Point(0, .333, 0);
@@ -605,7 +654,7 @@ int main(int argc, char *argv[]) {
 	//subdividePatch(temp, .33, &vertexList);
 
 	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-	/*printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
+	printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[1].point(0), vertexList[1].point(1), vertexList[1].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[2].point(0), vertexList[2].point(1), vertexList[2].point(2));
 	printf("vertexList point: %f, %f, %f\n", vertexList[3].point(0), vertexList[3].point(1), vertexList[3].point(2));
