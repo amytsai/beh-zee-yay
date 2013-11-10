@@ -119,7 +119,7 @@ class BezPatch {
 public:
 	point_vector controlPointsPatch;
 	BezPatch(point_vector);
-	Point interpolate(float, float, Vector*);
+	void interpolate(float, float, Vector*, Point*);
 };
 
 //***************** BEZCURVE *****************//
@@ -129,7 +129,7 @@ public:
 	point_vector controlPointsCurve;  //POINTS MUST BE IN ABCD ORDER
 	BezCurve(point_vector);
 	BezCurve(Point&, Point&, Point&, Point&);
-	Point interpolate(float u);
+	void interpolate(float u, Point*);
 	Vector derivative(float);
 };
 
@@ -149,27 +149,10 @@ Point::Point(Vector3f& vec) {
 	point = Vector4f(vec(0), vec(1), vec(2), 1);
 }
 
-
-/*Point Point::add(Vector v) {
-Vector4f temp = point + v.vector;
-return Point(temp);
-}
-
-Point Point::sub(Vector v) {
-Vector4f temp = point - v.vector;
-return Point(temp);
-}*/
-
 Vector Point::sub(Point& p) {
 	Vector4f temp = point - p.point;
 	return Vector(temp);
 }
-
-/*Point Point::transform(Transformation trans) {
-Point temp;
-temp = Point(trans.matrix * point);
-return temp;
-}*/
 
 //***************** VECTOR METHODS *****************//
 
@@ -235,18 +218,6 @@ void Vector::normalize() {
 	len = 1.0f;
 }
 
-/*bool Vector::equals(Vector& v) {
-Vector4f temp = v.vector - vector;
-float size = temp.norm();
-return size == 0;
-}
-
-Vector Vector::transform(Transformation trans){
-Vector temp;
-temp = Vector(trans.matrix * vector);
-return temp;
-}*/
-
 //***************** VERTEX METHODS *****************//
 Vertex::Vertex() {
 	vert = Vector3f(0, 0, 0);
@@ -273,28 +244,33 @@ void LineSeg::interpolate(float u, Point* interp) {
 }
 
 
-
-
 //***************** BEZPATCH METHODS *****************//
 BezPatch::BezPatch(point_vector cps) {
 	controlPointsPatch = cps;
 }
 
-Point BezPatch::interpolate(float u, float v, Vector* norm) {
+void BezPatch::interpolate(float u, float v, Vector* norm, Point* pt) {
 	//Direction confusion here
 	point_vector vcurve = point_vector(4);
 	point_vector ucurve = point_vector(4);
 	Vector dPdv, dPdu;
 	for(int x = 0; x < 4; x++) {
-		vcurve[x] = BezCurve(controlPointsPatch[x], controlPointsPatch[4 + x], controlPointsPatch[8 + x], controlPointsPatch[12 + x]).interpolate(u);
-		ucurve[x] = BezCurve(controlPointsPatch[4*x], controlPointsPatch[4*x + 1], controlPointsPatch[4*x + 2], controlPointsPatch[4*x + 3]).interpolate(v);
+		Point upoint = Point();
+		Point vpoint = Point();
+		
+		BezCurve(controlPointsPatch[x], controlPointsPatch[4 + x], controlPointsPatch[8 + x], controlPointsPatch[12 + x]).interpolate(u, &upoint);
+		BezCurve(controlPointsPatch[4*x], controlPointsPatch[4*x + 1], controlPointsPatch[4*x + 2], controlPointsPatch[4*x + 3]).interpolate(v, &vpoint);
+		ucurve[x] = vpoint;
+		vcurve[x] = upoint;
 	}
 	dPdv = BezCurve(vcurve).derivative(v);
 	dPdu = BezCurve(ucurve).derivative(u);
 	//DIRECTIONS WHATS GOING ON
 	(*norm) = dPdu.cross(dPdv);
 	(*norm).normalize();
-	return BezCurve(vcurve).interpolate(v);
+	Point p = Point();
+	BezCurve(ucurve).interpolate(u, &p);
+	*pt = p;
 }
 
 //***************** BEZCURVE METHODS *****************//
@@ -310,22 +286,22 @@ BezCurve::BezCurve(Point& a, Point& b, Point& c, Point& d) : controlPointsCurve(
 	controlPointsCurve[3] = d;
 }
 
-Point BezCurve::interpolate(float u) {
+void BezCurve::interpolate(float u, Point* pt) {
 	LineSeg AB, BC, CD, EF, FG, HI;
 	Point E, F, G, H, I, J;
 	AB = LineSeg(controlPointsCurve.at(0), controlPointsCurve.at(1));
 	BC = LineSeg(controlPointsCurve.at(1), controlPointsCurve.at(2));
 	CD = LineSeg(controlPointsCurve.at(2), controlPointsCurve.at(3));
-	AB.interpolate(u, &E);
-	BC.interpolate(u, &F);
-	CD.interpolate(u, &G);
-	EF = LineSeg(E, F);
-	FG = LineSeg(F, G);
-	EF.interpolate(u, &H);
-	FG.interpolate(u, &I);
+	AB.interpolate(u, &E); //A
+	BC.interpolate(u, &F); //B
+	CD.interpolate(u, &G); //C
+	EF = LineSeg(E, F); //AB
+	FG = LineSeg(F, G); //BC
+	EF.interpolate(u, &H); //D
+	FG.interpolate(u, &I); //E
 	HI = LineSeg(H, I);
 	HI.interpolate(u, &J);
-	return J;
+	*pt = J;
 }
 
 Vector BezCurve::derivative(float u) {
@@ -349,7 +325,7 @@ Vector BezCurve::derivative(float u) {
 //***************** SUBDIVIDEPATCH *****************//
 void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 	int x = 0;
-	float numdiv = 1 / step;
+	int numdiv = 1 / step;
 	printf("numdiv = %f, step = %f \n", numdiv, step);
 	//Come confusion with the for loops here
 	for(int iu = 0; iu < numdiv; iu++) {
@@ -357,19 +333,20 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 		for(int iv = 0; iv < numdiv; iv++) {
 			float v = iv * step;
 			Vector normal = Vector();
-			//Point interpPoint = patch.interpolate(u, v, &normal);
-			//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-			//(*VertexArray)[x] = (interpPoint);
-			//printf("vertexArray point: %f, %f, %f\n", (*VertexArray)[1].point(0), (*VertexArray)[1].point(1), (*VertexArray)[1].point(2));
-			//x++;
             printf("u = %f, v = %f \n", u, v);
-            Point interpPoint0 = patch.interpolate(u, v, &normal);
+            Point interpPoint0 = Point();
+            Point interpPoint1 = Point();
+            Point interpPoint2 = Point();
+            Point interpPoint3 = Point();
+
+            patch.interpolate(u, v, &normal, &interpPoint0);
+            patch.interpolate(u, min(v+step, 1.0f), &normal, &interpPoint1);
+            patch.interpolate(min(u+step, 1.0f), min(v+step, 1.0f), &normal, &interpPoint2);
+            patch.interpolate(min(u+step, 1.0f), v, &normal, &interpPoint3);
+
             VertexArray->push_back(interpPoint0);
-            Point interpPoint1 = patch.interpolate(u, v+step, &normal);
             VertexArray->push_back(interpPoint1);
-            Point interpPoint2 = patch.interpolate(u+step, v+step, &normal);
             VertexArray->push_back(interpPoint2);
-            Point interpPoint3 = patch.interpolate(u+step, v, &normal);
             VertexArray->push_back(interpPoint3);
             x++;
 			//SAVE INTERPPOINT AND NORMAL HERE
@@ -392,7 +369,8 @@ int patches;
 bool adaptive = false;
 bool isFlat = false;
 bool isWireframe = false;
-string filename;
+float tipangle = 0.0f;
+float turnangle = 0.0f;
 vector<BezPatch> patchList;
 
 //****************************************************
@@ -404,22 +382,10 @@ void drawBezPatch(BezPatch patch, float step) {
 	//vertexArray size needs to be related to numdiv
 	int vertexArraySize =  (int) numdiv * numdiv * 4;
 	printf("vertexArraySize = %d\n", vertexArraySize);
-	point_vector vertexArray(vertexArraySize);
+	point_vector vertexArray;
 	subdividePatch(patch, step, &vertexArray);
-	//Probably endpoint errors here
-	/*for(int x = 0; x < ((int) numdiv); x++) {
-		for(int y = 0; y < ((int) numdiv); y++) {			
-			int z = (numdiv + 1) * x + y;
-			cout << z << endl;
-			glBegin(GL_QUADS); 
-			glVertex3f(vertexArray[z].point(0), vertexArray[z].point(1), vertexArray[z].point(2));
-			glVertex3f(vertexArray[z + 1].point(0), vertexArray[z + 1].point(1), vertexArray[z + 1].point(2));
-			glVertex3f(vertexArray[z + numdiv + 2].point(0), vertexArray[z + numdiv + 2].point(1), vertexArray[z + numdiv + 2].point(2));
-			glVertex3f(vertexArray[z + numdiv + 1].point(0), vertexArray[z + numdiv + 1].point(1), vertexArray[z + numdiv + 1].point(2));
-			glEnd(); 
-		}
-	}*/
 	glBegin(GL_QUADS);
+	printf("vertexArray.size() = %d\n", vertexArray.size());
     for(int i = 0; i < vertexArray.size(); i +=4) {
     	printf("drawing point (%f, %f, %f) \n", vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
         printf("drawing point (%f, %f, %f) \n", vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
@@ -475,18 +441,13 @@ void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
 //***************************************************
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
-
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
 	glLoadIdentity();				        // make sure transformation is "zero'd"
-
-	//glColor3f(1, 0, 0);
+	glRotatef (tipangle, 1,0,0);  // Up and down arrow keys 'tip' view.
+    glRotatef (turnangle, 0,0,1);  // Right/left arrow keys 'turn' view.
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
 	}
-	/*glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
-    glVertex3f( 0.0f, 100.0f, 0.0f);              // Top
-    glVertex3f(10.0f,10.0f, 0.0f);              // Bottom Left
-    glVertex3f( 90.0f,10.0f, 0.0f);*/              // Bottom Right
 	glEnd();                            // Finished Drawing The Triangle
 
 	glFlush();
@@ -505,14 +466,37 @@ void keyboard( unsigned char key, int x, int y )
 			} else {
 				glShadeModel(GL_FLAT);
 			}
+			break;
 		case 'w':
 			if(isWireframe) {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
 				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			}
+			break;
+	}
+	glutPostRedisplay();
+}
 
-
+void arrowkeys( int key, int x, int y )
+{
+	switch(key) {
+		case GLUT_KEY_LEFT :
+			printf("left keyboard \n");
+			turnangle += 1;
+			break;
+       	case GLUT_KEY_RIGHT: 
+       		printf("right keyboard \n");
+       		turnangle -= 1;
+       		break;
+       	case GLUT_KEY_UP   :
+       		printf("up keyboard \n");
+       		tipangle += 1;
+       		break;  
+       	case GLUT_KEY_DOWN :
+       		printf("down keyboard \n");  
+       		tipangle -= 1;
+       		break;
 	}
 	glutPostRedisplay();
 }
@@ -528,7 +512,6 @@ void loadScene(std::string file) {
 		cout << "Unable to open file" << endl;
 	} else {
 		string line;
-        printf("before getline\n");
 		getline(inpfile,line);
 		printf("num patches: %d\n", atoi(line.c_str()));
 		patches = atoi(line.c_str());
@@ -540,7 +523,6 @@ void loadScene(std::string file) {
 				vector<string> splitline;
 				string buf;
 				getline(inpfile,line);
-				printf("line %s\n", line.c_str());
 				stringstream ss(line);
 				while (ss >> buf) {
 					splitline.push_back(buf);
@@ -550,7 +532,6 @@ void loadScene(std::string file) {
 				if(splitline.size() == 0) {
 					continue;
 				} else {
-					printf("buf: %s\n", buf.c_str());
 					float a1 = atof(splitline[0].c_str());
 					float a2 = atof(splitline[1].c_str());
 					float a3 = atof(splitline[2].c_str());
@@ -570,7 +551,6 @@ void loadScene(std::string file) {
                 	printf("%f, %f, %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f\n", a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3);
                 }
 			}
-			//getline(inpfile,line); //to skip blank line
 			patchList.push_back(BezPatch(points));
 			printf("added new patch\n");
 			i++;
@@ -624,6 +604,7 @@ int main(int argc, char *argv[]) {
 	glutDisplayFunc(myDisplay);        // function to run when its time to draw something
 	glutReshapeFunc(myReshape);        // function to run when the window gets resized
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(arrowkeys);
 	
 
 	/*point_vector asdf(16);
