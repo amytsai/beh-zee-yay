@@ -142,6 +142,7 @@ Point::Point(float a, float b, float c) {
 }
 
 Point::Point(Vector4f& vec) {
+	//printf("NEW POINT : ( %f, %f, %f )\n", vec(0), vec(1), vec(2));
 	point = Vector4f(vec(0), vec(1), vec(2), 1);
 }
 
@@ -239,8 +240,15 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 
 void LineSeg::interpolate(float u, Point* interp) {
 	/* Parametric interpolation of a line segment, assuming start is u = 0 end is u = 1*/
-	Vector4f newPoint = start.point * (1 - u) + end.point * (u);
-	(*interp) = Point(newPoint);
+	//u = min(u, 1.0f);
+	if(u > 1.0f) {
+		printf("********** U IS GREATER THAN 1 **********\n");
+	} else if ( u < 0.0f) {
+		printf("********** U IS LESS THAN 0 **********\n");
+	}
+	Vector4f newPoint = start.point * (1.0f - u) + end.point * (u);
+	*interp = Point(newPoint);
+	//printf("interpolated point (%f, %f, %f) \n", newPoint(0), newPoint(1), newPoint(2));
 }
 
 
@@ -250,27 +258,28 @@ BezPatch::BezPatch(point_vector cps) {
 }
 
 void BezPatch::interpolate(float u, float v, Vector* norm, Point* pt) {
-	//Direction confusion here
-	point_vector vcurve = point_vector(4);
-	point_vector ucurve = point_vector(4);
+	point_vector vcurve;
+	point_vector ucurve;
 	Vector dPdv, dPdu;
 	for(int x = 0; x < 4; x++) {
+		/*if(controlPointsPatch.size() != 16) {
+			printf("OH NO controlPointsPatch.size() = %d\n", controlPointsPatch.size());
+		}*/
 		Point upoint = Point();
-		Point vpoint = Point();
-		
+		Point vpoint = Point();		
 		BezCurve(controlPointsPatch[x], controlPointsPatch[4 + x], controlPointsPatch[8 + x], controlPointsPatch[12 + x]).interpolate(u, &upoint);
 		BezCurve(controlPointsPatch[4*x], controlPointsPatch[4*x + 1], controlPointsPatch[4*x + 2], controlPointsPatch[4*x + 3]).interpolate(v, &vpoint);
-		ucurve[x] = vpoint;
-		vcurve[x] = upoint;
+		ucurve.push_back(vpoint);
+		vcurve.push_back(upoint);
 	}
+	//printf("ucurve.size = %d, vcurve.size = %d\n", ucurve.size(), vcurve.size());
 	dPdv = BezCurve(vcurve).derivative(v);
-	dPdu = BezCurve(ucurve).derivative(u);
-	//DIRECTIONS WHATS GOING ON
 	(*norm) = dPdu.cross(dPdv);
 	(*norm).normalize();
 	Point p = Point();
 	BezCurve(ucurve).interpolate(u, &p);
-	*pt = p;
+	(*pt) = p;
+
 }
 
 //***************** BEZCURVE METHODS *****************//
@@ -326,14 +335,14 @@ Vector BezCurve::derivative(float u) {
 void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 	int x = 0;
 	int numdiv = 1 / step;
-	printf("numdiv = %f, step = %f \n", numdiv, step);
+	printf("numdiv = %d, step = %f \n", numdiv, step);
 	//Come confusion with the for loops here
 	for(int iu = 0; iu < numdiv; iu++) {
 		float u = iu * step;
 		for(int iv = 0; iv < numdiv; iv++) {
 			float v = iv * step;
 			Vector normal = Vector();
-            printf("u = %f, v = %f \n", u, v);
+            //printf("u = %f, v = %f \n", u, v);
             Point interpPoint0 = Point();
             Point interpPoint1 = Point();
             Point interpPoint2 = Point();
@@ -343,6 +352,11 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
             patch.interpolate(u, min(v+step, 1.0f), &normal, &interpPoint1);
             patch.interpolate(min(u+step, 1.0f), min(v+step, 1.0f), &normal, &interpPoint2);
             patch.interpolate(min(u+step, 1.0f), v, &normal, &interpPoint3);
+
+            //printf("interpolated point (%f, %f, %f) \n", interpPoint0.point(0), interpPoint0.point(1), interpPoint0.point(2));
+            //printf("interpolated point (%f, %f, %f) \n", interpPoint1.point(0), interpPoint1.point(1), interpPoint1.point(2));
+            //printf("interpolated point (%f, %f, %f) \n", interpPoint2.point(0), interpPoint2.point(1), interpPoint2.point(2));
+            //printf("interpolated point (%f, %f, %f) \n", interpPoint3.point(0), interpPoint3.point(1), interpPoint3.point(2));
 
             VertexArray->push_back(interpPoint0);
             VertexArray->push_back(interpPoint1);
@@ -387,10 +401,10 @@ void drawBezPatch(BezPatch patch, float step) {
 	glBegin(GL_QUADS);
 	printf("vertexArray.size() = %d\n", vertexArray.size());
     for(int i = 0; i < vertexArray.size(); i +=4) {
-    	printf("drawing point (%f, %f, %f) \n", vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
-        printf("drawing point (%f, %f, %f) \n", vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
-        printf("drawing point (%f, %f, %f) \n", vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
-        printf("drawing point (%f, %f, %f) \n", vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+    	//printf("drawing point (%f, %f, %f) \n", vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
         glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
         glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
         glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
@@ -491,11 +505,11 @@ void arrowkeys( int key, int x, int y )
        		break;
        	case GLUT_KEY_UP   :
        		printf("up keyboard \n");
-       		tipangle += 1;
+       		tipangle -= 1;
        		break;  
        	case GLUT_KEY_DOWN :
        		printf("down keyboard \n");  
-       		tipangle -= 1;
+       		tipangle += 1;
        		break;
 	}
 	glutPostRedisplay();
@@ -519,15 +533,15 @@ void loadScene(std::string file) {
 		while(i < patches) {
             printf("i = %d\n", i);
 			point_vector points;
-			for(int j = 0; j < 4; j++) {
+			for(int j = 0; j < 5; j++) {
 				vector<string> splitline;
 				string buf;
 				getline(inpfile,line);
+				cout << line << endl;
 				stringstream ss(line);
 				while (ss >> buf) {
 					splitline.push_back(buf);
 				}
-
 				//Ignore blank lines
 				if(splitline.size() == 0) {
 					continue;
@@ -551,7 +565,11 @@ void loadScene(std::string file) {
                 	printf("%f, %f, %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f\n", a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3);
                 }
 			}
-			patchList.push_back(BezPatch(points));
+			if (points.size() != 16) {
+				printf("OH NO points.size() = %d \n", points.size());
+			}
+			BezPatch newP = BezPatch(points);
+			patchList.push_back(newP);
 			printf("added new patch\n");
 			i++;
 
