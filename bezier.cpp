@@ -1,4 +1,5 @@
 #include <vector>
+#include <queue>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -54,6 +55,7 @@ class Triangle;
 typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANGE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
 typedef std::vector<Vector, Eigen::aligned_allocator<Vector> > normal_vector; 
 typedef std::vector<Triangle> triangle_vector;
+typedef std::queue<Triangle> triangle_queue;
 
 //***************** POINT *****************//
 /* Class for storing 3D points using homogenous coordinates */
@@ -120,7 +122,7 @@ public:
 	TriangleSide ab, bc, ca;
 	Triangle(Vertex&, Vertex&, Vertex&);
 	bool subdivide(BezPatch, float, triangle_vector*);
-	void draw();
+	void draw(BezPatch);
 
 private:
 	bool checkAB(BezPatch, float);
@@ -192,8 +194,7 @@ Vector Point::sub(Point& p) {
 }
 
 float dist(Point a, Point b) {
-	Vector4f diff = b.point - a.point;
-	return abs(diff.norm());
+	return sqrt(pow(b.point(0) - a.point(0), 2) + pow(b.point(1) - a.point(1), 2) + pow(b.point(2) - a.point(2), 2));
 }
 
 //***************** VECTOR METHODS *****************//
@@ -322,6 +323,7 @@ bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles
 	e1 = checkAB(patch, error); //e1 = ab
 	e2 = checkBC(patch, error); //e2 = bc
 	e3 = checkCA(patch, error); //e3 = ca
+
 	if(e1 && e2 && e3) {
 		return false;
 	}
@@ -385,8 +387,18 @@ bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles
 	return true;
 }
 
-void Triangle::draw() {
-
+void Triangle::draw(BezPatch patch) {
+	Vector normA, normB, normC;
+	Point pointA, pointB, pointC;
+	patch.interpolate(a.u(), a.v(), &normA, &pointA);
+	patch.interpolate(b.u(), b.v(), &normB, &pointB);
+	patch.interpolate(c.u(), c.v(), &normC, &pointC);
+	glNormal3f(normA.vector(0), normA.vector(1), normA.vector(2));
+	glVertex3f(pointA.point(0), pointA.point(1), pointA.point(2));
+	glNormal3f(normB.vector(0), normB.vector(1), normB.vector(2));
+	glVertex3f(pointB.point(0), pointB.point(1), pointB.point(2));
+	glNormal3f(normC.vector(0), normC.vector(1), normC.vector(2));
+	glVertex3f(pointC.point(0), pointC.point(1), pointC.point(2));
 }
 
 bool Triangle::checkAB(BezPatch patch, float error) {
@@ -395,6 +407,7 @@ bool Triangle::checkAB(BezPatch patch, float error) {
 	ab.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
@@ -408,6 +421,8 @@ bool Triangle::checkBC(BezPatch patch, float error) {
 	bc.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
@@ -421,6 +436,8 @@ bool Triangle::checkCA(BezPatch patch, float error) {
 	ca.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
@@ -555,7 +572,7 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, norma
 	int x = 0;
 	int numdiv = 1 / step;
 	printf("numdiv = %d, step = %f \n", numdiv, step);
-	//Come confusion with the for loops here
+
 	for(int iu = 0; iu < numdiv; iu++) {
 		float u = iu * step;
 		for(int iv = 0; iv < numdiv; iv++) {
@@ -606,35 +623,66 @@ float scale = 1.0f;
 vector<BezPatch> patchList;
 
 //****************************************************
-// DRAW FUNCTION
+// DRAW BEZ PATCH
 //****************************************************
 //Currently draws a single bezier patch given a step
 void drawBezPatch(BezPatch patch, float step) {
 	float numdiv = 1 / step;
-	//vertexArray size needs to be related to numdiv
-	int vertexArraySize =  (int) numdiv * numdiv * 4;
-	printf("vertexArraySize = %d\n", vertexArraySize);
 	point_vector vertexArray;
 	normal_vector normalArray;
-	subdividePatch(patch, step, &vertexArray, &normalArray);
-	glBegin(GL_QUADS);
-	glEnable(GL_NORMALIZE);
-	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, kd);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, ka);
-	printf("vertexArray.size() = %d\n", vertexArray.size());
-    for(int i = 0; i < vertexArray.size(); i +=4) {
-    	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
-        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
-        glNormal3f(normalArray[i+1].vector(0), normalArray[i+1].vector(1), normalArray[i+1].vector(2));
-        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
-        glNormal3f(normalArray[i+2].vector(0), normalArray[i+2].vector(1), normalArray[i+2].vector(2));
-        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
-        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
-        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
-    }
-    glEnd();
+
+	if(!adaptive) {
+		subdividePatch(patch, step, &vertexArray, &normalArray);
+		glBegin(GL_QUADS);
+
+		printf("vertexArray.size() = %d\n", vertexArray.size());
+	    for(int i = 0; i < vertexArray.size(); i +=4) {
+	    	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
+	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+	        glNormal3f(normalArray[i+1].vector(0), normalArray[i+1].vector(1), normalArray[i+1].vector(2));
+	        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+	        glNormal3f(normalArray[i+2].vector(0), normalArray[i+2].vector(1), normalArray[i+2].vector(2));
+	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+	        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
+	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+	    }
+	    glEnd();
+	} else {
+		triangle_queue triangles;
+		Point bl = patch.controlPointsPatch[0].point;
+		Point br = patch.controlPointsPatch[3].point;
+		Point tl = patch.controlPointsPatch[12].point;
+		Point tr = patch.controlPointsPatch[15].point;
+
+		Vector2f bottomL = Vector2f(0.0, 0.0);
+		Vector2f bottomR = Vector2f(0.0, 1.0);
+		Vector2f topL = Vector2f(1.0, 0.0);
+		Vector2f topR = Vector2f(1.0, 1.0);
+
+		Vertex bottomleft = Vertex(bl, bottomL);
+		Vertex bottomright = Vertex(br, bottomR);
+		Vertex topleft = Vertex(tl, topL);
+		Vertex topright = Vertex(tr, topR);
+
+		triangles.push(Triangle(bottomleft, bottomright, topright));
+		triangles.push(Triangle(bottomleft, topright, topleft));
+		glBegin(GL_TRIANGLES);
+		while(!triangles.empty()) {
+			triangle_vector subtriangles;
+			Triangle curtriangle = triangles.front();
+			triangles.pop();
+			if(curtriangle.subdivide(patch, parameter, &subtriangles)) {
+				while(!subtriangles.empty()) {
+					printf("subtriangles.size() = %d\n", subtriangles.size());
+					triangles.push(subtriangles.back());
+					subtriangles.pop_back();
+				}
+			} else {
+				curtriangle.draw(patch);
+			}
+		}
+		glEnd();
+	}
 }
 
 //****************************************************
@@ -654,6 +702,11 @@ void initScene(){
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
+    glEnable(GL_NORMALIZE);
+	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, kd);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ka);
 
 	// Nothing to do here for this simple example.
 
@@ -675,17 +728,6 @@ void myReshape(int w, int h) {
 }
 
 //****************************************************
-// A routine to set a pixel by drawing a GL point.  This is not a
-// general purpose routine as it assumes a lot of stuff specific to
-// this example.
-//****************************************************
-
-void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
-	glColor3f(r, g, b);
-	glVertex2f(x + 0.5, y + 0.5);   // The 0.5 is to target pixel
-}
-
-//****************************************************
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
@@ -697,6 +739,7 @@ void myDisplay() {
     glRotatef (turnangle, 0,0,1);  // Right/left arrow keys 'turn' view.
     glTranslatef(dx, 0, dz);
     glScalef(scale, scale, scale);
+
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
 	}
@@ -870,6 +913,7 @@ int main(int argc, char *argv[]) {
 	if (argc > 3 ) {
 		if (strcmp(argv[3], "-a") == 0) {
 			adaptive = true;
+			printf("ADAPTIVE IS TRUE\n");
 		} else {
 			cout << "Command line argument not found" << endl;
 			exit(EXIT_FAILURE);
@@ -897,46 +941,6 @@ int main(int argc, char *argv[]) {
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(arrowkeys);
 	
-
-	/*point_vector asdf(16);
-
-	asdf[0] = Point(0, 0, 0);
-	asdf[1] = Point(0, .333, 0);
-	asdf[2] = Point(0, .667, 0);
-	asdf[3] = Point(0, 1.00, 0);
-	asdf[4] = Point(.333, 0, 0);
-	asdf[5] = Point(.333, .333, 0);
-	asdf[6] = Point(.333, .667, 0);
-	asdf[7] = Point(.333, 1.00, 0);
-	asdf[8] = Point(.667, 0, 0);
-	asdf[9] = Point(.667, .333, 0);
-	asdf[10] = Point(.667, .667, 0);
-	asdf[11] = Point(.667, 1.00, 0);
-	asdf[12] = Point(1.00, 0, 0);
-	asdf[13] = Point(1.00, .333, 0);
-	asdf[14] = Point(1.00, .667, 0);
-	asdf[15] = Point(1.00, 1.00, 0);
-	
-	BezPatch temp = BezPatch(asdf);
-	Vector norm = Vector();
-	int size = 16;
-	point_vector vertexList = point_vector(size);
-	Point interpPoint = temp.interpolate(.33, .33, &norm);
-	//drawBezPatch(temp, .33);
-	//subdividePatch(temp, .33, &vertexList);
-
-	//printf("Interpolated point: %f, %f, %f\n", interpPoint.point(0), interpPoint.point(1), interpPoint.point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[0].point(0), vertexList[0].point(1), vertexList[0].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[1].point(0), vertexList[1].point(1), vertexList[1].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[2].point(0), vertexList[2].point(1), vertexList[2].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[3].point(0), vertexList[3].point(1), vertexList[3].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[4].point(0), vertexList[4].point(1), vertexList[4].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[5].point(0), vertexList[5].point(1), vertexList[5].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[6].point(0), vertexList[6].point(1), vertexList[6].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[7].point(0), vertexList[7].point(1), vertexList[7].point(2));
-	printf("vertexList point: %f, %f, %f\n", vertexList[8].point(0), vertexList[8].point(1), vertexList[8].point(2));*/
-
-
 	glutMainLoop();							// infinite loop that will keep drawing and resizing
 	// and whatever else*/
 
