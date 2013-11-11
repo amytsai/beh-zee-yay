@@ -273,7 +273,8 @@ void BezPatch::interpolate(float u, float v, Vector* norm, Point* pt) {
 	}
 	//printf("ucurve.size = %d, vcurve.size = %d\n", ucurve.size(), vcurve.size());
 	dPdv = BezCurve(vcurve).derivative(v);
-	(*norm) = dPdu.cross(dPdv);
+	dPdu = BezCurve(ucurve).derivative(u);
+	(*norm) = dPdv.cross(dPdu);
 	(*norm).normalize();
 	Point p = Point();
 	BezCurve(ucurve).interpolate(u, &p);
@@ -395,6 +396,7 @@ void drawBezPatch(BezPatch patch, float step) {
 	normal_vector normalArray;
 	subdividePatch(patch, step, &vertexArray, &normalArray);
 	glBegin(GL_QUADS);
+	glEnable(GL_NORMALIZE);
 	/*GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat ka[] = {0.1f, 0.1f, 0.1f, 1.0f};
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
