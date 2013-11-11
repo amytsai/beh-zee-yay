@@ -274,7 +274,7 @@ void BezPatch::interpolate(float u, float v, Vector* norm, Point* pt) {
 	//printf("ucurve.size = %d, vcurve.size = %d\n", ucurve.size(), vcurve.size());
 	dPdv = BezCurve(vcurve).derivative(v);
 	dPdu = BezCurve(ucurve).derivative(u);
-	(*norm) = dPdv.cross(dPdu);
+	(*norm) = dPdu.cross(dPdv);
 	(*norm).normalize();
 	Point p = Point();
 	BezCurve(ucurve).interpolate(u, &p);
@@ -402,8 +402,8 @@ void drawBezPatch(BezPatch patch, float step) {
 	glEnable(GL_NORMALIZE);
 	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, kd);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ka);
 	printf("vertexArray.size() = %d\n", vertexArray.size());
     for(int i = 0; i < vertexArray.size(); i +=4) {
     	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
@@ -423,14 +423,18 @@ void drawBezPatch(BezPatch patch, float step) {
 //****************************************************
 void initScene(){
     glShadeModel(GL_SMOOTH);
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    glPolygonMode( GL_FRONT, GL_FILL );
+    glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHT2);
     GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
-    GLfloat light_position1[] = {1.0, 0.0, 0.0, 0.0};
+    GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
+    GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
 
 	// Nothing to do here for this simple example.
 
@@ -467,6 +471,7 @@ void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
 //***************************************************
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
 	glLoadIdentity();				        // make sure transformation is "zero'd"
 	glRotatef (tipangle, 1,0,0);  // Up and down arrow keys 'tip' view.
