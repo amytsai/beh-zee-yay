@@ -46,9 +46,11 @@ class BezPatch;
 class BezCurve;
 class Vector;
 class Vertex;
+class Triangle;
 
 typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANGE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
 typedef std::vector<Vector, Eigen::aligned_allocator<Vector> > normal_vector; 
+typedef std::vector<Triangle> triangle_vector;
 
 //***************** POINT *****************//
 /* Class for storing 3D points using homogenous coordinates */
@@ -86,12 +88,33 @@ public:
 	void normalize();
 };
 
+//***************** VERTEX *****************//
 class Vertex {
 public:
 	Vector3f vert;
+	Vector2f bezierCoord;
 	Vertex();
 	Vertex(Point&);
+	Vertex(Vector3f&, Vector2f&);
+	float u();
+	float v();
 };
+
+//***************** Triangle *****************//
+class Triangle {
+public:
+	Vertex a;
+	Vertex b;
+	Vertex c;
+	Triangle(Vertex, Vertex, Vertex);
+	bool subdivide(float, triangle_vector*);
+	void draw();
+
+private:
+	bool checkAB();
+	bool checkBC();
+	bool checkCA();
+}
 
 //***************** LINESEG *****************//
 /* Class to store a line segment. Represented by a beginning and end Poing */
