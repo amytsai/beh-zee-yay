@@ -318,7 +318,71 @@ Triangle::Triangle(Vertex& p1, Vertex& p2, Vertex& p3) {
 }
 
 bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles) {
-	return false;
+	bool e1, e2, e3;
+	e1 = checkAB(patch, error); //e1 = ab
+	e2 = checkBC(patch, error); //e2 = bc
+	e3 = checkCA(patch, error); //e3 = ca
+	if(e1 && e2 && e3) {
+		return false;
+	}
+	if(!e1 && e2 && e3) {
+		Vertex mid = Vertex();
+		ab.midpoint(&mid);
+		triangles->push_back(Triangle(mid, b, c));
+		triangles->push_back(Triangle(mid, c, a));
+	}
+	else if(e1 && !e2 && e3) {
+		Vertex mid = Vertex();
+		bc.midpoint(&mid);
+		triangles->push_back(Triangle(mid, c, a));
+		triangles->push_back(Triangle(mid, a, b));
+	}
+	else if(e1 && e2 && !e3) {
+		Vertex mid = Vertex();
+		ca.midpoint(&mid);
+		triangles->push_back(Triangle(mid, a, b));
+		triangles->push_back(Triangle(mid, b, c));
+	}
+	else if(!e1 && !e2 && e3) {
+		Vertex mid1 = Vertex();
+		Vertex mid2 = Vertex();
+		ab.midpoint(&mid1);
+		bc.midpoint(&mid2);
+		triangles->push_back(Triangle(mid2, mid1, b));
+		triangles->push_back(Triangle(mid2, a, mid1));
+		triangles->push_back(Triangle(mid2, c, a));
+	}
+	else if(e1 && !e2 && !e3) {
+		Vertex mid1 = Vertex();
+		Vertex mid2 = Vertex();
+		bc.midpoint(&mid1);
+		ca.midpoint(&mid2);
+		triangles->push_back(Triangle(mid2, mid1, c));
+		triangles->push_back(Triangle(mid2, b, mid1));
+		triangles->push_back(Triangle(mid2, a, b));
+	}
+	else if(!e1 && e2 && !e3) {
+		Vertex mid1 = Vertex();
+		Vertex mid2 = Vertex();
+		ca.midpoint(&mid1);
+		ab.midpoint(&mid2);
+		triangles->push_back(Triangle(mid2, mid1, a));
+		triangles->push_back(Triangle(mid2, c, mid1));
+		triangles->push_back(Triangle(mid2, b, c));
+	}
+	else if(!e1 && !e2 && !e3) {
+		Vertex mid1 = Vertex();
+		Vertex mid2 = Vertex();
+		Vertex mid3 = Vertex();
+		ab.midpoint(&mid1);
+		bc.midpoint(&mid2);
+		ca.midpoint(&mid3);
+		triangles->push_back(Triangle(mid1, b, mid2));
+		triangles->push_back(Triangle(mid2, c, mid3));
+		triangles->push_back(Triangle(mid3, a, mid1));
+		triangles->push_back(Triangle(mid1, mid2, mid3));
+	}
+	return true;
 }
 
 void Triangle::draw() {
