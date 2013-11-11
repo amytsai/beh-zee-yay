@@ -397,10 +397,10 @@ void drawBezPatch(BezPatch patch, float step) {
 	subdividePatch(patch, step, &vertexArray, &normalArray);
 	glBegin(GL_QUADS);
 	glEnable(GL_NORMALIZE);
-	/*GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat ka[] = {0.1f, 0.1f, 0.1f, 1.0f};
+	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);*/
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);
 	printf("vertexArray.size() = %d\n", vertexArray.size());
     for(int i = 0; i < vertexArray.size(); i +=4) {
     	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
@@ -423,8 +423,11 @@ void initScene(){
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
     GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+    GLfloat light_position1[] = {1.0, 0.0, 0.0, 0.0};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
 
 	// Nothing to do here for this simple example.
 
@@ -468,7 +471,6 @@ void myDisplay() {
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
 	}
-	glEnd();                            // Finished Drawing The Triangle
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
