@@ -45,7 +45,10 @@ class Viewport;
 class BezPatch;
 class BezCurve;
 class Vector;
+
+//Adaptive Subdivision Classes
 class Vertex;
+class TriangleSide;
 class Triangle;
 
 typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANGE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
@@ -91,30 +94,39 @@ public:
 //***************** VERTEX *****************//
 class Vertex {
 public:
-	Vector3f vert;
+	Vector3f worldCoord;
 	Vector2f bezierCoord;
 	Vertex();
-	Vertex(Point&);
+	Vertex(Point&, Vector2f&);
 	Vertex(Vector3f&, Vector2f&);
 	float u();
 	float v();
 };
 
-//***************** Triangle *****************//
+//***************** TRIANGLE SIDE *****************//
+
+class TriangleSide {
+public:
+	Vertex start, end;
+	TriangleSide(Vertex&, Vertex&);
+	TriangleSide();
+	void midpoint(Vertex*);
+};
+
+//***************** TRIANGLE *****************//
 class Triangle {
 public:
-	Vertex a;
-	Vertex b;
-	Vertex c;
-	Triangle(Vertex, Vertex, Vertex);
-	bool subdivide(float, triangle_vector*);
+	Vertex a, b, c;
+	TriangleSide ab, bc, ca;
+	Triangle(Vertex&, Vertex&, Vertex&);
+	bool subdivide(BezPatch, float, triangle_vector*);
 	void draw();
 
 private:
-	bool checkAB();
-	bool checkBC();
-	bool checkCA();
-}
+	bool checkAB(BezPatch, float);
+	bool checkBC(BezPatch, float);
+	bool checkCA(BezPatch, float);
+};
 
 //***************** LINESEG *****************//
 /* Class to store a line segment. Represented by a beginning and end Poing */
@@ -123,6 +135,7 @@ public:
 	Point start, end;
 	LineSeg();
 	LineSeg(Point&, Point&);
+	LineSeg(Vertex&, Vertex&);
 	void interpolate(float, Point*);
 
 };
@@ -142,6 +155,7 @@ public:
 	point_vector controlPointsPatch;
 	BezPatch(point_vector);
 	void interpolate(float, float, Vector*, Point*);
+	void interpolate(float, float, Point*);
 };
 
 //***************** BEZCURVE *****************//
@@ -175,6 +189,11 @@ Point::Point(Vector3f& vec) {
 Vector Point::sub(Point& p) {
 	Vector4f temp = point - p.point;
 	return Vector(temp);
+}
+
+float dist(Point a, Point b) {
+	Vector4f diff = b.point - a.point;
+	return abs(diff.norm());
 }
 
 //***************** VECTOR METHODS *****************//
@@ -243,10 +262,106 @@ void Vector::normalize() {
 
 //***************** VERTEX METHODS *****************//
 Vertex::Vertex() {
-	vert = Vector3f(0, 0, 0);
+	worldCoord = Vector3f(0, 0, 0);
 }
-Vertex::Vertex(Point& p) {
-	vert = Vector3f(p.point(0), p.point(1), p.point(2));
+
+Vertex::Vertex(Point& p, Vector2f& uv) {
+	worldCoord = Vector3f(p.point(0), p.point(1), p.point(2));
+	bezierCoord = uv;
+}
+
+Vertex::Vertex(Vector3f& p, Vector2f& uv) {
+	worldCoord = p;
+	bezierCoord = uv;
+}
+
+float Vertex::u() {
+	return bezierCoord(0);
+}
+
+float Vertex::v() {
+	return bezierCoord(1);
+}
+//***************** TRIANGLE SIDE *****************//
+TriangleSide::TriangleSide(Vertex& a, Vertex& b) {
+	start = a;
+	end = b;
+}
+
+TriangleSide::TriangleSide() {
+	start = Vertex();
+	end = Vertex();
+}
+
+void TriangleSide::midpoint(Vertex *mdpt) {
+	Point worldmdpt;
+	Vector2f beziermdpt;
+	Vertex midpoint;
+	float midU, midV;
+	midU = (start.u() + end.u()) / 2;
+	midV = (start.v() + end.v()) / 2;
+	beziermdpt = Vector2f(midU, midV);
+
+	LineSeg(start,end).interpolate(0.5, &worldmdpt);
+	midpoint = Vertex(worldmdpt, beziermdpt);
+	*mdpt = midpoint;
+}
+
+//***************** TRIANGLE METHODS *****************//
+Triangle::Triangle(Vertex& p1, Vertex& p2, Vertex& p3) {
+	a = p1;
+	b = p2;
+	c = p3;
+	ab = TriangleSide(a,b);
+	bc = TriangleSide(b,c);
+	ca = TriangleSide(c,a);
+}
+
+bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles) {
+	return false;
+}
+
+void Triangle::draw() {
+
+}
+
+bool Triangle::checkAB(BezPatch patch, float error) {
+	Point worldmdpt, beziermdpt;
+	Vertex midpoint;
+	ab.midpoint(&midpoint);
+	worldmdpt = Point(midpoint.worldCoord);
+	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	if(dist(worldmdpt, beziermdpt) < error) {
+		return true;
+	} else {
+		return false;
+	}	
+}
+
+bool Triangle::checkBC(BezPatch patch, float error) {
+	Point worldmdpt, beziermdpt;
+	Vertex midpoint;
+	bc.midpoint(&midpoint);
+	worldmdpt = Point(midpoint.worldCoord);
+	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	if(dist(worldmdpt, beziermdpt) < error) {
+		return true;
+	} else {
+		return false;
+	}	
+}
+
+bool Triangle::checkCA(BezPatch patch, float error) {
+	Point worldmdpt, beziermdpt;
+	Vertex midpoint;
+	ca.midpoint(&midpoint);
+	worldmdpt = Point(midpoint.worldCoord);
+	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	if(dist(worldmdpt, beziermdpt) < error) {
+		return true;
+	} else {
+		return false;
+	}	
 }
 
 //***************** LINESEG METHODS *****************//
@@ -260,14 +375,13 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 	end = finish;
 }
 
+LineSeg::LineSeg(Vertex& begin, Vertex& finish) {
+	start = Point(begin.worldCoord(0), begin.worldCoord(1), begin.worldCoord(2));
+	start = Point(finish.worldCoord(0), finish.worldCoord(1), finish.worldCoord(2));
+}
+
 void LineSeg::interpolate(float u, Point* interp) {
 	/* Parametric interpolation of a line segment, assuming start is u = 0 end is u = 1*/
-	//u = min(u, 1.0f);
-	if(u > 1.0f) {
-		printf("********** U IS GREATER THAN 1 **********\n");
-	} else if ( u < 0.0f) {
-		printf("********** U IS LESS THAN 0 **********\n");
-	}
 	Vector4f newPoint = start.point * (1.0f - u) + end.point * (u);
 	*interp = Point(newPoint);
 	//printf("interpolated point (%f, %f, %f) \n", newPoint(0), newPoint(1), newPoint(2));
@@ -299,6 +413,24 @@ void BezPatch::interpolate(float u, float v, Vector* norm, Point* pt) {
 	dPdu = BezCurve(ucurve).derivative(u);
 	(*norm) = dPdu.cross(dPdv);
 	(*norm).normalize();
+	Point p = Point();
+	BezCurve(ucurve).interpolate(u, &p);
+	(*pt) = p;
+
+}
+
+void BezPatch::interpolate(float u, float v, Point* pt) {
+	point_vector vcurve;
+	point_vector ucurve;
+	Vector dPdv, dPdu;
+	for(int x = 0; x < 4; x++) {
+		Point upoint = Point();
+		Point vpoint = Point();		
+		BezCurve(controlPointsPatch[x], controlPointsPatch[4 + x], controlPointsPatch[8 + x], controlPointsPatch[12 + x]).interpolate(u, &upoint);
+		BezCurve(controlPointsPatch[4*x], controlPointsPatch[4*x + 1], controlPointsPatch[4*x + 2], controlPointsPatch[4*x + 3]).interpolate(v, &vpoint);
+		ucurve.push_back(vpoint);
+		vcurve.push_back(upoint);
+	}
 	Point p = Point();
 	BezCurve(ucurve).interpolate(u, &p);
 	(*pt) = p;
