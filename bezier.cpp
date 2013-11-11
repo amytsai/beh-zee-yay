@@ -381,6 +381,9 @@ bool isFlat = false;
 bool isWireframe = false;
 float tipangle = 0.0f;
 float turnangle = 0.0f;
+float dx = 0.0f;
+float dz = 0.0f;
+float scale = 1.0f;
 vector<BezPatch> patchList;
 
 //****************************************************
@@ -468,6 +471,8 @@ void myDisplay() {
 	glLoadIdentity();				        // make sure transformation is "zero'd"
 	glRotatef (tipangle, 1,0,0);  // Up and down arrow keys 'tip' view.
     glRotatef (turnangle, 0,0,1);  // Right/left arrow keys 'turn' view.
+    glTranslatef(dx, 0, dz);
+    glScalef(scale, scale, scale);
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
 	}
@@ -500,29 +505,62 @@ void keyboard( unsigned char key, int x, int y )
 				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			}
 			break;
+		case '=':
+			if(scale >= 10.0) {
+				scale = 10.0;
+			} else {
+				scale += .1;
+			}
+			break;
+		case '-':
+			if(scale <= .1f) {
+				scale = .1f;
+			} else {
+				scale -= .1f;
+			}
+			break;
 	}
 	glutPostRedisplay();
+
 }
 
 void arrowkeys( int key, int x, int y )
 {
-	switch(key) {
-		case GLUT_KEY_LEFT :
-			printf("left keyboard \n");
-			turnangle += 1;
-			break;
-       	case GLUT_KEY_RIGHT: 
-       		printf("right keyboard \n");
-       		turnangle -= 1;
-       		break;
-       	case GLUT_KEY_UP   :
-       		printf("up keyboard \n");
-       		tipangle -= 1;
-       		break;  
-       	case GLUT_KEY_DOWN :
-       		printf("down keyboard \n");  
-       		tipangle += 1;
-       		break;
+	int mod = glutGetModifiers();
+	if(mod == 0) {
+		switch(key) {
+			case GLUT_KEY_LEFT :
+				printf("left keyboard \n");
+				turnangle += 2;
+				break;
+	       	case GLUT_KEY_RIGHT: 
+	       		printf("right keyboard \n");
+	       		turnangle -= 2;
+	       		break;
+	       	case GLUT_KEY_UP   :
+	       		printf("up keyboard \n");
+	       		tipangle -= 2;
+	       		break;  
+	       	case GLUT_KEY_DOWN :
+	       		printf("down keyboard \n");  
+	       		tipangle += 2;
+	       		break;
+		}
+	} else if (mod == 1) {
+		switch(key) {
+			case GLUT_KEY_LEFT:
+				dx -= .1;
+				break;
+			case GLUT_KEY_RIGHT:
+				dx += .1;
+				break;
+			case GLUT_KEY_UP:
+				dz += .1;
+				break;
+			case GLUT_KEY_DOWN:
+				dz -= .1;
+				break;
+		}
 	}
 	glutPostRedisplay();
 }
