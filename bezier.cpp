@@ -47,7 +47,8 @@ class BezCurve;
 class Vector;
 class Vertex;
 
-typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANCE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
+typedef std::vector<Point, Eigen::aligned_allocator<Point> > point_vector; // DONT CHANGE THIS SPACING OTHERWISE IT DOESN'T COMPILE ON AMY'S COMPUTER
+typedef std::vector<Vector, Eigen::aligned_allocator<Vector> > normal_vector; 
 
 //***************** POINT *****************//
 /* Class for storing 3D points using homogenous coordinates */
@@ -83,8 +84,6 @@ public:
 	float dot(Vector&);
 	Vector cross(Vector&);
 	void normalize();
-	//bool equals(Vector&);
-	//Vector transform(Transformation); //Returns the transformed vector
 };
 
 class Vertex {
@@ -332,7 +331,7 @@ Vector BezCurve::derivative(float u) {
 }
 
 //***************** SUBDIVIDEPATCH *****************//
-void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
+void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, normal_vector* NormalArray) {
 	int x = 0;
 	int numdiv = 1 / step;
 	printf("numdiv = %d, step = %f \n", numdiv, step);
@@ -341,27 +340,23 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray) {
 		float u = iu * step;
 		for(int iv = 0; iv < numdiv; iv++) {
 			float v = iv * step;
-			Vector normal = Vector();
-            //printf("u = %f, v = %f \n", u, v);
-            Point interpPoint0 = Point();
-            Point interpPoint1 = Point();
-            Point interpPoint2 = Point();
-            Point interpPoint3 = Point();
+			Vector normal0, normal1, normal2, normal3;
+            Point interpPoint0, interpPoint1, interpPoint2, interpPoint3;
 
-            patch.interpolate(u, v, &normal, &interpPoint0);
-            patch.interpolate(u, min(v+step, 1.0f), &normal, &interpPoint1);
-            patch.interpolate(min(u+step, 1.0f), min(v+step, 1.0f), &normal, &interpPoint2);
-            patch.interpolate(min(u+step, 1.0f), v, &normal, &interpPoint3);
-
-            //printf("interpolated point (%f, %f, %f) \n", interpPoint0.point(0), interpPoint0.point(1), interpPoint0.point(2));
-            //printf("interpolated point (%f, %f, %f) \n", interpPoint1.point(0), interpPoint1.point(1), interpPoint1.point(2));
-            //printf("interpolated point (%f, %f, %f) \n", interpPoint2.point(0), interpPoint2.point(1), interpPoint2.point(2));
-            //printf("interpolated point (%f, %f, %f) \n", interpPoint3.point(0), interpPoint3.point(1), interpPoint3.point(2));
+            patch.interpolate(u, v, &normal0, &interpPoint0);
+            patch.interpolate(u, min(v+step, 1.0f), &normal1, &interpPoint1);
+            patch.interpolate(min(u+step, 1.0f), min(v+step, 1.0f), &normal2, &interpPoint2);
+            patch.interpolate(min(u+step, 1.0f), v, &normal3, &interpPoint3);
 
             VertexArray->push_back(interpPoint0);
             VertexArray->push_back(interpPoint1);
             VertexArray->push_back(interpPoint2);
             VertexArray->push_back(interpPoint3);
+
+            NormalArray->push_back(normal0);
+            NormalArray->push_back(normal1);
+            NormalArray->push_back(normal2);
+            NormalArray->push_back(normal3);
             x++;
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
@@ -397,17 +392,22 @@ void drawBezPatch(BezPatch patch, float step) {
 	int vertexArraySize =  (int) numdiv * numdiv * 4;
 	printf("vertexArraySize = %d\n", vertexArraySize);
 	point_vector vertexArray;
-	subdividePatch(patch, step, &vertexArray);
+	normal_vector normalArray;
+	subdividePatch(patch, step, &vertexArray, &normalArray);
 	glBegin(GL_QUADS);
+	/*GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat ka[] = {0.1f, 0.1f, 0.1f, 1.0f};
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);*/
 	printf("vertexArray.size() = %d\n", vertexArray.size());
     for(int i = 0; i < vertexArray.size(); i +=4) {
-    	//printf("drawing point (%f, %f, %f) \n", vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
-        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
-        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
-        //printf("drawing point (%f, %f, %f) \n", vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+    	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
         glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+        glNormal3f(normalArray[i+1].vector(0), normalArray[i+1].vector(1), normalArray[i+1].vector(2));
         glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+        glNormal3f(normalArray[i+2].vector(0), normalArray[i+2].vector(1), normalArray[i+2].vector(2));
         glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
         glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
     }
     glEnd();
@@ -417,9 +417,13 @@ void drawBezPatch(BezPatch patch, float step) {
 // Simple init function
 //****************************************************
 void initScene(){
-	glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
 	// Nothing to do here for this simple example.
 
 }
@@ -476,15 +480,19 @@ void keyboard( unsigned char key, int x, int y )
 	switch(key) {
 		case 's':
 			if(isFlat) {
+				isFlat = false;
 				glShadeModel(GL_SMOOTH);
 			} else {
+				isFlat = true;
 				glShadeModel(GL_FLAT);
 			}
 			break;
 		case 'w':
 			if(isWireframe) {
+				isWireframe = false;
 				glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 			} else {
+				isWireframe = true;
 				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			}
 			break;
@@ -616,7 +624,6 @@ int main(int argc, char *argv[]) {
 	glutInitWindowSize(viewport.w, viewport.h);
 	glutInitWindowPosition(0,0);
 	glutCreateWindow(argv[0]);
-
 	initScene();							// quick function to set up scene
 
 	glutDisplayFunc(myDisplay);        // function to run when its time to draw something
