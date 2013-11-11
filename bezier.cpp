@@ -301,9 +301,11 @@ void TriangleSide::midpoint(Vertex *mdpt) {
 	float midU, midV;
 	midU = (start.u() + end.u()) / 2;
 	midV = (start.v() + end.v()) / 2;
-	beziermdpt = Vector2f(midU, midV);
 
+	beziermdpt = Vector2f(midU, midV);
 	LineSeg(start,end).interpolate(0.5, &worldmdpt);
+	printf("Triangle Side Midpoint (%f, %f, %f) \n", worldmdpt.point(0), worldmdpt.point(1), worldmdpt.point(2));
+
 	midpoint = Vertex(worldmdpt, beziermdpt);
 	*mdpt = midpoint;
 }
@@ -323,6 +325,7 @@ bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles
 	e1 = checkAB(patch, error); //e1 = ab
 	e2 = checkBC(patch, error); //e2 = bc
 	e3 = checkCA(patch, error); //e3 = ca
+	//printf("A : (%f, %f, %f) (%f, %f) \n", a.worldCoord(0), a.worldCoord(1), a.worldCoord(2), a.bezierCoord(0), a.bezierCoord(1));
 
 	if(e1 && e2 && e3) {
 		return false;
@@ -402,11 +405,14 @@ void Triangle::draw(BezPatch patch) {
 }
 
 bool Triangle::checkAB(BezPatch patch, float error) {
+
 	Point worldmdpt, beziermdpt;
 	Vertex midpoint;
 	ab.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
+	printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+	printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
 	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
@@ -650,13 +656,13 @@ void drawBezPatch(BezPatch patch, float step) {
 	} else {
 		triangle_queue triangles;
 		Point bl = patch.controlPointsPatch[0].point;
-		Point br = patch.controlPointsPatch[3].point;
-		Point tl = patch.controlPointsPatch[12].point;
+		Point br = patch.controlPointsPatch[12].point;
+		Point tl = patch.controlPointsPatch[3].point;
 		Point tr = patch.controlPointsPatch[15].point;
 
 		Vector2f bottomL = Vector2f(0.0, 0.0);
-		Vector2f bottomR = Vector2f(0.0, 1.0);
-		Vector2f topL = Vector2f(1.0, 0.0);
+		Vector2f bottomR = Vector2f(1.0, 0.0);
+		Vector2f topL = Vector2f(0.0, 1.0);
 		Vector2f topR = Vector2f(1.0, 1.0);
 
 		Vertex bottomleft = Vertex(bl, bottomL);
@@ -673,13 +679,16 @@ void drawBezPatch(BezPatch patch, float step) {
 			triangles.pop();
 			if(curtriangle.subdivide(patch, parameter, &subtriangles)) {
 				while(!subtriangles.empty()) {
-					printf("subtriangles.size() = %d\n", subtriangles.size());
+					//printf("subtriangles.size() = %d\n", subtriangles.size());
 					triangles.push(subtriangles.back());
 					subtriangles.pop_back();
+
 				}
+
 			} else {
 				curtriangle.draw(patch);
 			}
+
 		}
 		glEnd();
 	}
