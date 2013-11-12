@@ -193,7 +193,7 @@ Vector Point::sub(Point& p) {
 	return Vector(temp);
 }
 
-float dist(Point a, Point b) {
+float dist(Point& a, Point& b) {
 	return sqrt(pow(b.point(0) - a.point(0), 2) + pow(b.point(1) - a.point(1), 2) + pow(b.point(2) - a.point(2), 2));
 }
 
@@ -304,7 +304,7 @@ void TriangleSide::midpoint(Vertex *mdpt) {
 
 	beziermdpt = Vector2f(midU, midV);
 	LineSeg(start,end).interpolate(0.5, &worldmdpt);
-	printf("Triangle Side Midpoint (%f, %f, %f) \n", worldmdpt.point(0), worldmdpt.point(1), worldmdpt.point(2));
+	//printf("Triangle Side Midpoint (%f, %f, %f) \n", worldmdpt.point(0), worldmdpt.point(1), worldmdpt.point(2));
 
 	midpoint = Vertex(worldmdpt, beziermdpt);
 	*mdpt = midpoint;
@@ -331,57 +331,88 @@ bool Triangle::subdivide(BezPatch patch, float error, triangle_vector* triangles
 		return false;
 	}
 	if(!e1 && e2 && e3) {
+		Point beziermdpt;
 		Vertex mid = Vertex();
 		ab.midpoint(&mid);
+		patch.interpolate(mid.u(), mid.v(), &beziermdpt);
+		mid = Vertex(beziermdpt, mid.bezierCoord);
 		triangles->push_back(Triangle(mid, b, c));
 		triangles->push_back(Triangle(mid, c, a));
 	}
 	else if(e1 && !e2 && e3) {
+		Point beziermdpt;
 		Vertex mid = Vertex();
 		bc.midpoint(&mid);
+		patch.interpolate(mid.u(), mid.v(), &beziermdpt);
+		mid = Vertex(beziermdpt, mid.bezierCoord);
 		triangles->push_back(Triangle(mid, c, a));
 		triangles->push_back(Triangle(mid, a, b));
 	}
 	else if(e1 && e2 && !e3) {
+		Point beziermdpt;
 		Vertex mid = Vertex();
 		ca.midpoint(&mid);
+		patch.interpolate(mid.u(), mid.v(), &beziermdpt);
+		mid = Vertex(beziermdpt, mid.bezierCoord);
 		triangles->push_back(Triangle(mid, a, b));
 		triangles->push_back(Triangle(mid, b, c));
 	}
 	else if(!e1 && !e2 && e3) {
+		Point beziermdpt1, beziermdpt2;
 		Vertex mid1 = Vertex();
 		Vertex mid2 = Vertex();
 		ab.midpoint(&mid1);
 		bc.midpoint(&mid2);
+		patch.interpolate(mid1.u(), mid1.v(), &beziermdpt1);
+		mid1 = Vertex(beziermdpt1, mid1.bezierCoord);
+		patch.interpolate(mid2.u(), mid2.v(), &beziermdpt2);
+		mid2 = Vertex(beziermdpt2, mid2.bezierCoord);
 		triangles->push_back(Triangle(mid2, mid1, b));
 		triangles->push_back(Triangle(mid2, a, mid1));
 		triangles->push_back(Triangle(mid2, c, a));
 	}
 	else if(e1 && !e2 && !e3) {
+		Point beziermdpt1, beziermdpt2;
 		Vertex mid1 = Vertex();
 		Vertex mid2 = Vertex();
 		bc.midpoint(&mid1);
 		ca.midpoint(&mid2);
+		patch.interpolate(mid1.u(), mid1.v(), &beziermdpt1);
+		mid1 = Vertex(beziermdpt1, mid1.bezierCoord);
+		patch.interpolate(mid2.u(), mid2.v(), &beziermdpt2);
+		mid2 = Vertex(beziermdpt2, mid2.bezierCoord);
 		triangles->push_back(Triangle(mid2, mid1, c));
 		triangles->push_back(Triangle(mid2, b, mid1));
 		triangles->push_back(Triangle(mid2, a, b));
 	}
 	else if(!e1 && e2 && !e3) {
+		Point beziermdpt1, beziermdpt2;
 		Vertex mid1 = Vertex();
 		Vertex mid2 = Vertex();
 		ca.midpoint(&mid1);
 		ab.midpoint(&mid2);
+		patch.interpolate(mid1.u(), mid1.v(), &beziermdpt1);
+		mid1 = Vertex(beziermdpt1, mid1.bezierCoord);
+		patch.interpolate(mid2.u(), mid2.v(), &beziermdpt2);
+		mid2 = Vertex(beziermdpt2, mid2.bezierCoord);
 		triangles->push_back(Triangle(mid2, mid1, a));
 		triangles->push_back(Triangle(mid2, c, mid1));
 		triangles->push_back(Triangle(mid2, b, c));
 	}
 	else if(!e1 && !e2 && !e3) {
+		Point beziermdpt1, beziermdpt2, beziermdpt3;
 		Vertex mid1 = Vertex();
 		Vertex mid2 = Vertex();
 		Vertex mid3 = Vertex();
 		ab.midpoint(&mid1);
 		bc.midpoint(&mid2);
 		ca.midpoint(&mid3);
+		patch.interpolate(mid1.u(), mid1.v(), &beziermdpt1);
+		mid1 = Vertex(beziermdpt1, mid1.bezierCoord);
+		patch.interpolate(mid2.u(), mid2.v(), &beziermdpt2);
+		mid2 = Vertex(beziermdpt2, mid2.bezierCoord);
+		patch.interpolate(mid3.u(), mid3.v(), &beziermdpt3);
+		mid3 = Vertex(beziermdpt3, mid3.bezierCoord);
 		triangles->push_back(Triangle(mid1, b, mid2));
 		triangles->push_back(Triangle(mid2, c, mid3));
 		triangles->push_back(Triangle(mid3, a, mid1));
@@ -411,12 +442,13 @@ bool Triangle::checkAB(BezPatch patch, float error) {
 	ab.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
-	printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
-	printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+	
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
+		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 		return false;
 	}	
 }
@@ -427,11 +459,14 @@ bool Triangle::checkBC(BezPatch patch, float error) {
 	bc.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
-	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+	
 
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
+		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 		return false;
 	}	
 }
@@ -442,11 +477,14 @@ bool Triangle::checkCA(BezPatch patch, float error) {
 	ca.midpoint(&midpoint);
 	worldmdpt = Point(midpoint.worldCoord);
 	patch.interpolate(midpoint.u(), midpoint.v(), &beziermdpt);
-	printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+	
 
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
+		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 		return false;
 	}	
 }
