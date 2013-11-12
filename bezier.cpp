@@ -446,9 +446,9 @@ bool Triangle::checkAB(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
-		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+		/*printf("AB triangle midpoint \t (%f, %f, %f) (%f, %f) \n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
+		printf("AB surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
 		return false;
 	}	
 }
@@ -464,9 +464,9 @@ bool Triangle::checkBC(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
-		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+		/*printf("BC triangle midpoint \t (%f, %f, %f) (%f, %f) \n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
+		printf("BC surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
 		return false;
 	}	
 }
@@ -482,9 +482,9 @@ bool Triangle::checkCA(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
-		printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+		/*printf("CA triangle midpoint \t (%f, %f, %f) (%f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
+		printf("CA surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
 		return false;
 	}	
 }
@@ -502,7 +502,7 @@ LineSeg::LineSeg(Point& begin, Point& finish) {
 
 LineSeg::LineSeg(Vertex& begin, Vertex& finish) {
 	start = Point(begin.worldCoord(0), begin.worldCoord(1), begin.worldCoord(2));
-	start = Point(finish.worldCoord(0), finish.worldCoord(1), finish.worldCoord(2));
+	end = Point(finish.worldCoord(0), finish.worldCoord(1), finish.worldCoord(2));
 }
 
 void LineSeg::interpolate(float u, Point* interp) {
@@ -714,19 +714,19 @@ void drawBezPatch(BezPatch patch, float step) {
 		while(!triangles.empty()) {
 			triangle_vector subtriangles;
 			Triangle curtriangle = triangles.front();
+			/*printf("curtriangle: A(%f, %f, %f) (%f, %f)\n", curtriangle.a.worldCoord(0), curtriangle.a.worldCoord(1), curtriangle.a.worldCoord(2), curtriangle.a.bezierCoord(0), curtriangle.a.bezierCoord(1));
+			printf("curtriangle: B(%f, %f, %f) (%f, %f)\n", curtriangle.b.worldCoord(0), curtriangle.b.worldCoord(1), curtriangle.b.worldCoord(2), curtriangle.b.bezierCoord(0), curtriangle.b.bezierCoord(1));
+			printf("curtriangle: C(%f, %f, %f) (%f, %f)\n", curtriangle.c.worldCoord(0), curtriangle.c.worldCoord(1), curtriangle.c.worldCoord(2), curtriangle.c.bezierCoord(0), curtriangle.c.bezierCoord(1));*/
 			triangles.pop();
 			if(curtriangle.subdivide(patch, parameter, &subtriangles)) {
 				while(!subtriangles.empty()) {
 					//printf("subtriangles.size() = %d\n", subtriangles.size());
 					triangles.push(subtriangles.back());
 					subtriangles.pop_back();
-					break;
 				}
-				break;
 
 			} else {
 				curtriangle.draw(patch);
-				break;
 			}
 
 		}
