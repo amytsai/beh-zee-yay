@@ -633,7 +633,7 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, norma
             patch.interpolate(min(u+step, 1.0f), v, &normal3, &interpPoint3);
 
             VertexArray->push_back(interpPoint0);
-            VertexArray->push_back(interpPoint1);
+            VertexArray->push_back(interpPoint2);
             VertexArray->push_back(interpPoint2);
             VertexArray->push_back(interpPoint3);
 
@@ -744,8 +744,11 @@ void drawBezPatch(BezPatch patch, float step) {
 //****************************************************
 void initScene(){
     glShadeModel(GL_SMOOTH);
-    glPolygonMode( GL_FRONT, GL_FILL );
+    glPolygonMode(GL_FRONT, GL_FILL);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glCullFace(GL_BACK);
+    glDepthFunc(GL_LEQUAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
