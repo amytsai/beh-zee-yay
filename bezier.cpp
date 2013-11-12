@@ -446,9 +446,10 @@ bool Triangle::checkAB(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		/*printf("AB triangle midpoint \t (%f, %f, %f) (%f, %f) \n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
-		printf("AB surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
+		//printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		//printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		//printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+
 		return false;
 	}	
 }
@@ -464,9 +465,11 @@ bool Triangle::checkBC(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		/*printf("BC triangle midpoint \t (%f, %f, %f) (%f, %f) \n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
-		printf("BC surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
+
+		//printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		//printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		//printf("current error = %f\n", dist(worldmdpt, beziermdpt));
+
 		return false;
 	}	
 }
@@ -482,9 +485,9 @@ bool Triangle::checkCA(BezPatch patch, float error) {
 	if(dist(worldmdpt, beziermdpt) < error) {
 		return true;
 	} else {
-		/*printf("CA triangle midpoint \t (%f, %f, %f) (%f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2), midpoint.bezierCoord(0), midpoint.bezierCoord(1));
-		printf("CA surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
-		printf("current error = %f\n", dist(worldmdpt, beziermdpt));*/
+		//printf("triangle midpoint \t (%f, %f, %f)\n", midpoint.worldCoord(0), midpoint.worldCoord(1), midpoint.worldCoord(2));
+		//printf("surface midpoint \t (%f, %f, %f)\n", beziermdpt.point(0), beziermdpt.point(1), beziermdpt.point(2));
+		//printf("current error = %f\n", dist(worldmdpt, beziermdpt));
 		return false;
 	}	
 }
@@ -723,10 +726,12 @@ void drawBezPatch(BezPatch patch, float step) {
 					//printf("subtriangles.size() = %d\n", subtriangles.size());
 					triangles.push(subtriangles.back());
 					subtriangles.pop_back();
-				}
+
+			 }
 
 			} else {
 				curtriangle.draw(patch);
+
 			}
 
 		}
@@ -791,6 +796,7 @@ void myDisplay() {
 
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
+		//printf("Finished bez patch \n");
 	}
 
 	glFlush();
