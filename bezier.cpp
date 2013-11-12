@@ -753,6 +753,12 @@ void initScene(){
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2);
+
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LEQUAL);
+
+	//glCullFace(GL_BACK);
+
     GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
     GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
     GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
