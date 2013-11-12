@@ -684,6 +684,7 @@ void drawBezPatch(BezPatch patch, float step) {
 
 		printf("vertexArray.size() = %d\n", vertexArray.size());
 	    for(int i = 0; i < vertexArray.size(); i +=4) {
+			//asdfasdf
 	    	glNormal3f(normalArray[i].vector(0), normalArray[i].vector(1), normalArray[i].vector(2));
 	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
 	        glNormal3f(normalArray[i+1].vector(0), normalArray[i+1].vector(1), normalArray[i+1].vector(2));
