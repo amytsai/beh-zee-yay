@@ -694,13 +694,13 @@ void drawBezPatch(BezPatch patch, float step) {
 	} else {
 		triangle_queue triangles;
 		Point bl = patch.controlPointsPatch[0].point;
-		Point br = patch.controlPointsPatch[12].point;
-		Point tl = patch.controlPointsPatch[3].point;
+		Point br = patch.controlPointsPatch[3].point;
+		Point tl = patch.controlPointsPatch[12].point;
 		Point tr = patch.controlPointsPatch[15].point;
 
 		Vector2f bottomL = Vector2f(0.0, 0.0);
-		Vector2f bottomR = Vector2f(1.0, 0.0);
-		Vector2f topL = Vector2f(0.0, 1.0);
+		Vector2f bottomR = Vector2f(0.0, 1.0);
+		Vector2f topL = Vector2f(1.0, 0.0);
 		Vector2f topR = Vector2f(1.0, 1.0);
 
 		Vertex bottomleft = Vertex(bl, bottomL);
@@ -720,11 +720,13 @@ void drawBezPatch(BezPatch patch, float step) {
 					//printf("subtriangles.size() = %d\n", subtriangles.size());
 					triangles.push(subtriangles.back());
 					subtriangles.pop_back();
-
+					break;
 				}
+				break;
 
 			} else {
 				curtriangle.draw(patch);
+				break;
 			}
 
 		}
