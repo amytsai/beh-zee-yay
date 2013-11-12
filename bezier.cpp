@@ -632,15 +632,15 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, norma
             patch.interpolate(min(u+step, 1.0f), min(v+step, 1.0f), &normal2, &interpPoint2);
             patch.interpolate(min(u+step, 1.0f), v, &normal3, &interpPoint3);
 
-            VertexArray->push_back(interpPoint0);
-            VertexArray->push_back(interpPoint2);
-            VertexArray->push_back(interpPoint2);
             VertexArray->push_back(interpPoint3);
+            VertexArray->push_back(interpPoint2);
+            VertexArray->push_back(interpPoint1);
+            VertexArray->push_back(interpPoint0);
 
-            NormalArray->push_back(normal0);
-            NormalArray->push_back(normal1);
-            NormalArray->push_back(normal2);
             NormalArray->push_back(normal3);
+            NormalArray->push_back(normal2);
+            NormalArray->push_back(normal1);
+            NormalArray->push_back(normal0);
             x++;
 			//SAVE INTERPPOINT AND NORMAL HERE
 		}
