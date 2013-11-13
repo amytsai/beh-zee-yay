@@ -693,6 +693,17 @@ void drawBezPatch(BezPatch patch, float step) {
 	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
 	        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
 	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+			//asdfasdf
+			glNormal3f(normalArray[i+3].vector(0) * -1, normalArray[i+3].vector(1) * -1, normalArray[i+3].vector(2) * -1);
+	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
+			glNormal3f(normalArray[i+2].vector(0) * -1, normalArray[i+2].vector(1) * -1, normalArray[i+2].vector(2) * -1);
+	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
+			glNormal3f(normalArray[i+1].vector(0) * -1, normalArray[i+1].vector(1) * -1, normalArray[i+1].vector(2) * -1);
+	        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
+			glNormal3f(normalArray[i].vector(0) * -1, normalArray[i].vector(1) * -1, normalArray[i].vector(2) * -1);
+	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+	        
+	        
 	    }
 	    glEnd();
 	} else {
@@ -760,12 +771,12 @@ void initScene(){
 
 	//glCullFace(GL_BACK);
 
-    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+    //GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
     GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
-    GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    //GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
+    //glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
-    glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
+    //glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
     glEnable(GL_NORMALIZE);
 	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
@@ -795,6 +806,7 @@ void myReshape(int w, int h) {
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
+	bool test = true;
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
@@ -803,9 +815,11 @@ void myDisplay() {
     glRotatef (turnangle, 0,0,1);  // Right/left arrow keys 'turn' view.
     glTranslatef(dx, 0, dz);
     glScalef(scale, scale, scale);
+	//glColor3f(1.0, 0, 0);
 
 	for(int i = 0; i < patchList.size(); i++) {
 		drawBezPatch(patchList[i], parameter);
+		//glColor3f(1.0, 1.0, 0);
 		//printf("Finished bez patch \n");
 	}
 
