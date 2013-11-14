@@ -618,7 +618,7 @@ Vector BezCurve::derivative(float u) {
 void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, normal_vector* NormalArray) {
 	int x = 0;
 	int numdiv = 1 / step;
-	printf("numdiv = %d, step = %f \n", numdiv, step);
+	//printf("numdiv = %d, step = %f \n", numdiv, step);
 
 	for(int iu = 0; iu < numdiv; iu++) {
 		float u = iu * step;
@@ -757,14 +757,14 @@ void drawBezPatch(BezPatch patch, float step) {
 void initScene(){
     glShadeModel(GL_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
-    glEnable(GL_LIGHT2);
+    //glEnable(GL_LIGHT1);
+    //glEnable(GL_LIGHT2);
 
 	//glEnable(GL_DEPTH_TEST);
 	//glDepthFunc(GL_LEQUAL);
@@ -772,16 +772,18 @@ void initScene(){
 	//glCullFace(GL_BACK);
 
     //GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
-    GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
+    GLfloat light_position1[] = {0.0, 0.0, 1.0, 0.0};
     //GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
-    //glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position1);
+    //glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
     //glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
     glEnable(GL_NORMALIZE);
-	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	GLfloat kd[] = {.7f, .5f, .7f, 1.0f};
     GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
+    GLfloat ks[] = {0.7f, 0.5f, 0.7f, 1.0f};
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, ks);
 
 	// Nothing to do here for this simple example.
 
@@ -794,7 +796,8 @@ void initScene(){
 void myReshape(int w, int h) {
 	viewport.w = w;
 	viewport.h = h;
-
+	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
 	glViewport (0,0,viewport.w,viewport.h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -876,19 +879,19 @@ void arrowkeys( int key, int x, int y )
 	if(mod == 0) {
 		switch(key) {
 			case GLUT_KEY_LEFT :
-				printf("left keyboard \n");
+				//printf("left keyboard \n");
 				turnangle += 2;
 				break;
 	       	case GLUT_KEY_RIGHT: 
-	       		printf("right keyboard \n");
+	       		//printf("right keyboard \n");
 	       		turnangle -= 2;
 	       		break;
 	       	case GLUT_KEY_UP   :
-	       		printf("up keyboard \n");
+	       		//printf("up keyboard \n");
 	       		tipangle -= 2;
 	       		break;  
 	       	case GLUT_KEY_DOWN :
-	       		printf("down keyboard \n");  
+	       		//printf("down keyboard \n");  
 	       		tipangle += 2;
 	       		break;
 		}
