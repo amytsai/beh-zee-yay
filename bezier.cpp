@@ -694,14 +694,14 @@ void drawBezPatch(BezPatch patch, float step) {
 	        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
 	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
 			//asdfasdf
-			glNormal3f(normalArray[i+3].vector(0) * -1, normalArray[i+3].vector(1) * -1, normalArray[i+3].vector(2) * -1);
+			/*glNormal3f(normalArray[i+3].vector(0) * -1, normalArray[i+3].vector(1) * -1, normalArray[i+3].vector(2) * -1);
 	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
 			glNormal3f(normalArray[i+2].vector(0) * -1, normalArray[i+2].vector(1) * -1, normalArray[i+2].vector(2) * -1);
 	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
 			glNormal3f(normalArray[i+1].vector(0) * -1, normalArray[i+1].vector(1) * -1, normalArray[i+1].vector(2) * -1);
 	        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
 			glNormal3f(normalArray[i].vector(0) * -1, normalArray[i].vector(1) * -1, normalArray[i].vector(2) * -1);
-	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));
+	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));*/
 	        
 	        
 	    }
@@ -756,7 +756,7 @@ void drawBezPatch(BezPatch patch, float step) {
 //****************************************************
 void initScene(){
     glShadeModel(GL_SMOOTH);
-    glPolygonMode(GL_FRONT, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
@@ -780,8 +780,8 @@ void initScene(){
     glEnable(GL_NORMALIZE);
 	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, kd);
-	glMaterialfv(GL_FRONT, GL_AMBIENT, ka);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);
 
 	// Nothing to do here for this simple example.
 
@@ -1003,7 +1003,7 @@ int main(int argc, char *argv[]) {
 	glutInit(&argc, argv);
 
 	//This tells glut to use a double-buffered window with red, green, and blue channels 
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGB);
 
 	// Initalize theviewport size
 	viewport.w = 400;
