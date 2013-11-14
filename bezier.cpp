@@ -668,6 +668,7 @@ float dx = 0.0f;
 float dz = 0.0f;
 float scale = 1.0f;
 vector<BezPatch> patchList;
+float leftB, rightB, bottomB, topB, near, far = 0.0;
 
 //****************************************************
 // DRAW BEZ PATCH
@@ -759,15 +760,11 @@ void initScene(){
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glCullFace(GL_BACK);
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    //glEnable(GL_LIGHT1);
-    //glEnable(GL_LIGHT2);
-
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LEQUAL);
+    glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHT2);
 
 	//glCullFace(GL_BACK);
 
@@ -812,9 +809,15 @@ void myDisplay() {
 	bool test = true;
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
+	glMatrixMode(GL_PROJECTION);		        // indicate we are specifying camera transformation
 	glLoadIdentity();
-	    glTranslatef(dx, dz, 0);
+	float xBound = max(abs(leftB), rightB);
+	float yBound = max(abs(bottomB),topB);
+	float zBound = max(abs(near), far);
+	float Bound = max(max(xBound,yBound), zBound);
+	glOrtho(-Bound - .5,  Bound + .5, -Bound - .5, Bound + .5, -Bound - .5, Bound + .5);
+	//glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+	glTranslatef(dx, dz, 0);
 
 	// make sure transformation is "zero'd"
 	glRotatef (tipangle, 1,0,0);  // Up and down arrow keys 'tip' view.
@@ -948,22 +951,51 @@ void loadScene(std::string file) {
 					continue;
 				} else {
 					float a1 = atof(splitline[0].c_str());
+					leftB = min(a1, leftB);
+					rightB = max(a1, rightB);
 					float a2 = atof(splitline[1].c_str());
+					bottomB = min(a2, bottomB);
+					topB = max(a2, topB);
 					float a3 = atof(splitline[2].c_str());
+					near = min(a3, near);
+					far = max(a3, far);
+
 					float b1 = atof(splitline[3].c_str());
+					leftB = min(b1, leftB);
+					rightB = max(b1, rightB);
 					float b2 = atof(splitline[4].c_str());
+					bottomB = min(b2, bottomB);
+					topB = max(b2, topB);
 					float b3 = atof(splitline[5].c_str());
+					near = min(b3, near);
+					far = max(b3, far);
+
 					float c1 = atof(splitline[6].c_str());
+					leftB = min(c1, leftB);
+					rightB = max(c1, rightB);
 					float c2 = atof(splitline[7].c_str());
+					bottomB = min(c2, bottomB);
+					topB = max(c2, topB);
 					float c3 = atof(splitline[8].c_str());
+					near = min(c3, near);
+					far = max(c3, far);
+
 					float d1 = atof(splitline[9].c_str());
+					leftB = min(d1, leftB);
+					rightB = max(d1, rightB);
 					float d2 = atof(splitline[10].c_str());
+					bottomB = min(c2, bottomB);
+					topB = max(c2, topB);
 					float d3 = atof(splitline[11].c_str());
+					near = min(d3, near);
+					far = max(d3, far);
+
 					points.push_back(Point(a1, a2, a3));
 					points.push_back(Point(b1, b2, b3));
 					points.push_back(Point(c1, c2, c3));
 					points.push_back(Point(d1, d2, d3));
                 	printf("%f, %f, %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f\n", a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3);
+                	printf("left: %f, right: %f, top: %f, bottom: %f near: %f, far: %f \n", leftB, rightB, topB, bottomB, near, far);
                 }
 			}
 			if (points.size() != 16) {
