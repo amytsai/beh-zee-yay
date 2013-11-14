@@ -757,7 +757,7 @@ void drawBezPatch(BezPatch patch, float step) {
 void initScene(){
     glShadeModel(GL_SMOOTH);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
     glDepthFunc(GL_LEQUAL);
@@ -771,12 +771,12 @@ void initScene(){
 
 	//glCullFace(GL_BACK);
 
-    //GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
     GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
-    //GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
-    //glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
-    //glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
+    glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
     glEnable(GL_NORMALIZE);
 	GLfloat kd[] = {1.0f, 1.0f, 1.0f, 1.0f};
     GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
@@ -810,10 +810,12 @@ void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
-	glLoadIdentity();				        // make sure transformation is "zero'd"
+	glLoadIdentity();
+	    glTranslatef(dx, dz, 0);
+
+	// make sure transformation is "zero'd"
 	glRotatef (tipangle, 1,0,0);  // Up and down arrow keys 'tip' view.
     glRotatef (turnangle, 0,0,1);  // Right/left arrow keys 'turn' view.
-    glTranslatef(dx, 0, dz);
     glScalef(scale, scale, scale);
 	//glColor3f(1.0, 0, 0);
 
