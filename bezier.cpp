@@ -768,16 +768,16 @@ void initScene(){
 
 	//glCullFace(GL_BACK);
 
-    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+    GLfloat light_position[] = { 1.0, 1.0, 0.0, 0.0 };
     GLfloat light_position1[] = {0.0, 1.0, 0.0, 0.0};
-    GLfloat light_position2[] = {0.0, 0.0, -1.0, 0.0};
+    GLfloat light_position2[] = {-1.0, 0.0, -1.0, 0.0};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
     glLightfv(GL_LIGHT2, GL_POSITION, light_position2);
     glEnable(GL_NORMALIZE);
-	GLfloat kd[] = {.7f, .5f, .7f, 1.0f};
-    GLfloat ka[] = {0.4f, 0.4f, 0.4f, 1.0f};
-    GLfloat ks[] = {0.7f, 0.5f, 0.7f, 1.0f};
+	GLfloat kd[] = {.1f, .74f, .61f, 1.0f};
+    GLfloat ka[] = {0.1f, 0.74f, 0.61f, 1.0f};
+    GLfloat ks[] = {0.1f, 0.1f, 0.1f, 1.0f};
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, kd);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ka);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, ks);
