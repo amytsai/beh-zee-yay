@@ -9,17 +9,17 @@ Location: Amy Tsai is submitting onto the OSX machines.
 Building the Project
 --------------------
 type 
-'''
+```
 make
-'''
+```
 into the command line
 
 Command line arguments
 ----------------------
 After making the project, o run the program type:
-'''
+```
 ./bezier <.bez file> <subdivision parameter> [-a]
-'''
+```
 
 * The subdivision parameter specifies the __step size__ for uniform subdivision and the allowable __error__ for adaptive subdivision
 * By default, the program runs with uniform subdivision, -a runs adaptive
