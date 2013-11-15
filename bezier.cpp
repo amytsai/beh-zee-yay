@@ -900,20 +900,37 @@ void arrowkeys( int key, int x, int y )
 	       		tipangle += 2;
 	       		break;
 		}
-	} else if (mod == 1) {
-		switch(key) {
-			case GLUT_KEY_LEFT:
-				dx -= .1;
-				break;
-			case GLUT_KEY_RIGHT:
-				dx += .1;
-				break;
-			case GLUT_KEY_UP:
-				dz += .1;
-				break;
-			case GLUT_KEY_DOWN:
-				dz -= .1;
-				break;
+	} else if (mod > 0) {
+		if(mod == GLUT_ACTIVE_SHIFT) {
+			switch(key) {
+				case GLUT_KEY_LEFT:
+					dx -= .1;
+					break;
+				case GLUT_KEY_RIGHT:
+					dx += .1;
+					break;
+				case GLUT_KEY_UP:
+					dz += .1;
+					break;
+				case GLUT_KEY_DOWN:
+					dz -= .1;
+					break;
+			}
+		} else if(mod == GLUT_ACTIVE_ALT) {
+			switch(key) {
+				case GLUT_KEY_RIGHT:
+					parameter *= 1.5;
+					break;
+				case GLUT_KEY_LEFT:
+					parameter *= .75;
+					break;
+				case GLUT_KEY_UP:
+					parameter *= 2.0;
+					break;
+				case GLUT_KEY_DOWN:
+					parameter *= .5;
+					break;
+			}
 		}
 	}
 	glutPostRedisplay();
@@ -1043,8 +1060,8 @@ int main(int argc, char *argv[]) {
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGB);
 
 	// Initalize theviewport size
-	viewport.w = 400;
-	viewport.h = 400;
+	viewport.w = 600;
+	viewport.h = 600;
 
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
