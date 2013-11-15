@@ -668,7 +668,12 @@ float dx = 0.0f;
 float dz = 0.0f;
 float scale = 1.0f;
 vector<BezPatch> patchList;
-float leftB, rightB, bottomB, topB, near, far = 0.0;
+float leftB  = 0.0;
+float rightB = 0.0;
+float bottomB = 0.0;
+float topB = 0.0; 
+float nearamt = 1;
+float faramt = 1;
 
 //****************************************************
 // DRAW BEZ PATCH
@@ -813,7 +818,7 @@ void myDisplay() {
 	glLoadIdentity();
 	float xBound = max(abs(leftB), rightB);
 	float yBound = max(abs(bottomB),topB);
-	float zBound = max(abs(near), far);
+	float zBound = max(abs(nearamt), faramt);
 	float Bound = max(max(xBound,yBound), zBound);
 	glOrtho(-Bound - .5,  Bound + .5, -Bound - .5, Bound + .5, -Bound - .5, Bound + .5);
 	//glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
@@ -974,8 +979,8 @@ void loadScene(std::string file) {
 					bottomB = min(a2, bottomB);
 					topB = max(a2, topB);
 					float a3 = atof(splitline[2].c_str());
-					near = min(a3, near);
-					far = max(a3, far);
+					nearamt = min(a3, nearamt);
+					faramt = max(a3, faramt);
 
 					float b1 = atof(splitline[3].c_str());
 					leftB = min(b1, leftB);
@@ -984,8 +989,8 @@ void loadScene(std::string file) {
 					bottomB = min(b2, bottomB);
 					topB = max(b2, topB);
 					float b3 = atof(splitline[5].c_str());
-					near = min(b3, near);
-					far = max(b3, far);
+					nearamt = min(b3, nearamt);
+					faramt = max(b3, faramt);
 
 					float c1 = atof(splitline[6].c_str());
 					leftB = min(c1, leftB);
@@ -994,8 +999,8 @@ void loadScene(std::string file) {
 					bottomB = min(c2, bottomB);
 					topB = max(c2, topB);
 					float c3 = atof(splitline[8].c_str());
-					near = min(c3, near);
-					far = max(c3, far);
+					nearamt = min(c3, nearamt);
+					faramt = max(c3, faramt);
 
 					float d1 = atof(splitline[9].c_str());
 					leftB = min(d1, leftB);
@@ -1004,15 +1009,15 @@ void loadScene(std::string file) {
 					bottomB = min(c2, bottomB);
 					topB = max(c2, topB);
 					float d3 = atof(splitline[11].c_str());
-					near = min(d3, near);
-					far = max(d3, far);
+					nearamt = min(d3, nearamt);
+					faramt = max(d3, faramt);
 
 					points.push_back(Point(a1, a2, a3));
 					points.push_back(Point(b1, b2, b3));
 					points.push_back(Point(c1, c2, c3));
 					points.push_back(Point(d1, d2, d3));
                 	printf("%f, %f, %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f,  %f\n", a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3);
-                	printf("left: %f, right: %f, top: %f, bottom: %f near: %f, far: %f \n", leftB, rightB, topB, bottomB, near, far);
+                	printf("left: %f, right: %f, top: %f, bottom: %f near: %f, far: %f \n", leftB, rightB, topB, bottomB, nearamt, faramt);
                 }
 			}
 			if (points.size() != 16) {
