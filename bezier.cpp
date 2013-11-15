@@ -620,9 +620,9 @@ void subdividePatch(BezPatch patch, float step, point_vector* VertexArray, norma
 	int numdiv = 1 / step;
 	//printf("numdiv = %d, step = %f \n", numdiv, step);
 
-	for(int iu = 0; iu < numdiv; iu++) {
+	for(int iu = 0; iu <= numdiv; iu++) {
 		float u = iu * step;
-		for(int iv = 0; iv < numdiv; iv++) {
+		for(int iv = 0; iv <= numdiv; iv++) {
 			float v = iv * step;
 			Vector normal0, normal1, normal2, normal3;
             Point interpPoint0, interpPoint1, interpPoint2, interpPoint3;
@@ -699,17 +699,7 @@ void drawBezPatch(BezPatch patch, float step) {
 	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
 	        glNormal3f(normalArray[i+3].vector(0), normalArray[i+3].vector(1), normalArray[i+3].vector(2));
 	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
-			//asdfasdf
-			/*glNormal3f(normalArray[i+3].vector(0) * -1, normalArray[i+3].vector(1) * -1, normalArray[i+3].vector(2) * -1);
-	        glVertex3f(vertexArray[i+3].point(0), vertexArray[i+3].point(1), vertexArray[i+3].point(2));
-			glNormal3f(normalArray[i+2].vector(0) * -1, normalArray[i+2].vector(1) * -1, normalArray[i+2].vector(2) * -1);
-	        glVertex3f(vertexArray[i+2].point(0), vertexArray[i+2].point(1), vertexArray[i+2].point(2));
-			glNormal3f(normalArray[i+1].vector(0) * -1, normalArray[i+1].vector(1) * -1, normalArray[i+1].vector(2) * -1);
-	        glVertex3f(vertexArray[i+1].point(0), vertexArray[i+1].point(1), vertexArray[i+1].point(2));
-			glNormal3f(normalArray[i].vector(0) * -1, normalArray[i].vector(1) * -1, normalArray[i].vector(2) * -1);
-	        glVertex3f(vertexArray[i].point(0), vertexArray[i].point(1), vertexArray[i].point(2));*/
-	        
-	        
+	                
 	    }
 	    glEnd();
 	} else {
