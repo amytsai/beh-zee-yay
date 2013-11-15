@@ -29,8 +29,8 @@ Navigation
 Once the program is launched, the default view shows the entire scene the following commands can be used for navigation:
 
 * Arrow keys __rotate__ the scene 
-* SHIFT + arrow keys translate the scene
-* '+' and '-' (keys without shift) zoom the scene in and out
+* SHIFT + arrow keys __translate__ the scene
+* '+' and '-' (keys without shift) __zoom__ the scene in and out
 
 Shading Options
 ---------------
