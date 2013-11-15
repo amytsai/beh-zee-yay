@@ -917,7 +917,7 @@ void arrowkeys( int key, int x, int y )
 					parameter *= 1.5;
 					break;
 				case GLUT_KEY_LEFT:
-					parameter *= .75;
+					parameter *= .66;
 					break;
 				case GLUT_KEY_UP:
 					parameter *= 2.0;
